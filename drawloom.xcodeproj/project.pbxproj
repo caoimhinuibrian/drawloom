@@ -7,18 +7,29 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		1FCD8B602B857FDC00642A1C /* drawloomApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FCD8B5F2B857FDC00642A1C /* drawloomApp.swift */; };
+		1F23FF632B90296500E914BB /* drawloomApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F23FF622B90296500E914BB /* drawloomApp.swift */; };
+		1F3BD6942B894B9200F3EA29 /* speechRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F3BD6932B894B9200F3EA29 /* speechRecognizer.swift */; };
+		1F3BD6982B8D8BF000F3EA29 /* drawdownModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F3BD6972B8D8BF000F3EA29 /* drawdownModel.swift */; };
 		1FCD8B622B857FDC00642A1C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FCD8B612B857FDC00642A1C /* ContentView.swift */; };
 		1FCD8B642B857FDE00642A1C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1FCD8B632B857FDE00642A1C /* Assets.xcassets */; };
 		1FCD8B672B857FDE00642A1C /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1FCD8B662B857FDE00642A1C /* Preview Assets.xcassets */; };
+		1FCD8B6E2B85864900642A1C /* drawloomActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FCD8B6D2B85864900642A1C /* drawloomActions.swift */; };
+		1FCD8B712B86A2B800642A1C /* inputDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FCD8B702B86A2B800642A1C /* inputDocument.swift */; };
+		1FCD8B752B86C45D00642A1C /* Documents in Resources */ = {isa = PBXBuildFile; fileRef = 1FCD8B742B86C45D00642A1C /* Documents */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1F23FF622B90296500E914BB /* drawloomApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = drawloomApp.swift; sourceTree = "<group>"; };
+		1F3BD6932B894B9200F3EA29 /* speechRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = speechRecognizer.swift; sourceTree = "<group>"; };
+		1F3BD6972B8D8BF000F3EA29 /* drawdownModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = drawdownModel.swift; sourceTree = "<group>"; };
 		1FCD8B5C2B857FDC00642A1C /* drawloom.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = drawloom.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		1FCD8B5F2B857FDC00642A1C /* drawloomApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = drawloomApp.swift; sourceTree = "<group>"; };
 		1FCD8B612B857FDC00642A1C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		1FCD8B632B857FDE00642A1C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1FCD8B662B857FDE00642A1C /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		1FCD8B6D2B85864900642A1C /* drawloomActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = drawloomActions.swift; sourceTree = "<group>"; };
+		1FCD8B6F2B85EA9700642A1C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		1FCD8B702B86A2B800642A1C /* inputDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = inputDocument.swift; sourceTree = "<group>"; };
+		1FCD8B742B86C45D00642A1C /* Documents */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Documents; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -35,6 +46,7 @@
 		1FCD8B532B857FDC00642A1C = {
 			isa = PBXGroup;
 			children = (
+				1FCD8B742B86C45D00642A1C /* Documents */,
 				1FCD8B5E2B857FDC00642A1C /* drawloom */,
 				1FCD8B5D2B857FDC00642A1C /* Products */,
 			);
@@ -51,10 +63,15 @@
 		1FCD8B5E2B857FDC00642A1C /* drawloom */ = {
 			isa = PBXGroup;
 			children = (
-				1FCD8B5F2B857FDC00642A1C /* drawloomApp.swift */,
+				1FCD8B6F2B85EA9700642A1C /* Info.plist */,
+				1F3BD6932B894B9200F3EA29 /* speechRecognizer.swift */,
 				1FCD8B612B857FDC00642A1C /* ContentView.swift */,
+				1F23FF622B90296500E914BB /* drawloomApp.swift */,
 				1FCD8B632B857FDE00642A1C /* Assets.xcassets */,
 				1FCD8B652B857FDE00642A1C /* Preview Content */,
+				1FCD8B6D2B85864900642A1C /* drawloomActions.swift */,
+				1FCD8B702B86A2B800642A1C /* inputDocument.swift */,
+				1F3BD6972B8D8BF000F3EA29 /* drawdownModel.swift */,
 			);
 			path = drawloom;
 			sourceTree = "<group>";
@@ -127,6 +144,7 @@
 			files = (
 				1FCD8B672B857FDE00642A1C /* Preview Assets.xcassets in Resources */,
 				1FCD8B642B857FDE00642A1C /* Assets.xcassets in Resources */,
+				1FCD8B752B86C45D00642A1C /* Documents in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -138,7 +156,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				1FCD8B622B857FDC00642A1C /* ContentView.swift in Sources */,
-				1FCD8B602B857FDC00642A1C /* drawloomApp.swift in Sources */,
+				1FCD8B712B86A2B800642A1C /* inputDocument.swift in Sources */,
+				1FCD8B6E2B85864900642A1C /* drawloomActions.swift in Sources */,
+				1F3BD6982B8D8BF000F3EA29 /* drawdownModel.swift in Sources */,
+				1F23FF632B90296500E914BB /* drawloomApp.swift in Sources */,
+				1F3BD6942B894B9200F3EA29 /* speechRecognizer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -275,6 +297,7 @@
 				DEVELOPMENT_TEAM = 7ZLCAA6XSX;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = drawloom/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -304,6 +327,7 @@
 				DEVELOPMENT_TEAM = 7ZLCAA6XSX;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = drawloom/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

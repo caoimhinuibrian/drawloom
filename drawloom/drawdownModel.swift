@@ -1,0 +1,297 @@
+//
+//  drawdownModel.swift
+//  drawloom
+//
+//  Created by Kevin O'Brien on 2/26/24.
+//
+
+import Foundation
+import Speech
+import SwiftUI
+
+actor DrawdownModel: ObservableObject {
+    @MainActor @Published  var img:UIImage = UIImage()
+    private var pixels:[UInt8]?
+    var recognizer:SpeechRecognizer?
+    private var width:Int = 0
+    private var height:Int = 0
+    private var imline:[[String]] = []
+    private var upline:[[String]] = []
+    private var downline:[[String]] = []
+    private var drawDownLoaded: Bool = false
+    private var currentLineNum: Int = 0
+    @MainActor @Published var pulledLine:String = ""
+    private var releaseLine:String = ""
+    private var drawLine:String = ""
+    var synthesizer = AVSpeechSynthesizer()
+
+    private func setLineValues(pulls:String, up:String, down:String) {
+        Task { @MainActor in
+            self.pulledLine=pulls
+        }
+        Task {
+            self.releaseLine=up
+            self.drawLine=down
+        }
+    }
+    
+    nonisolated func setRecognizer(recognizer:SpeechRecognizer) {
+        Task {
+            await actualSetRecognizer(recognizer:recognizer)
+        }
+    }
+    
+    func actualSetRecognizer(recognizer:SpeechRecognizer) {
+        self.recognizer=recognizer
+    }
+    
+    func advance(by:Int) {
+        if currentLineNum<width-by {
+            currentLineNum+=by
+            updateImage(width:width,height:height,imageData:pixels!)
+            setCurrentLineValues()
+        }
+    }
+
+    func sayNext() {
+        var wordsToSpeak:String = "Release "+releaseLine
+        let utterance = AVSpeechUtterance(string: wordsToSpeak)
+        // Configure the utterance.
+        utterance.rate = 0.57
+        utterance.pitchMultiplier = 0.8
+        utterance.postUtteranceDelay = 0.2
+        utterance.volume = 0.8
+
+
+        // Retrieve the British English voice.
+        let voice = AVSpeechSynthesisVoice(language: "en-GB")
+
+
+        // Assign the voice to the utterance.
+        utterance.voice = voice
+        // Create a speech synthesizer.
+
+
+        // Tell the synthesizer to speak the utterance.
+        synthesizer.speak(utterance)
+    }
+    
+    func retreat() {
+        if currentLineNum>0 {
+            current-=1
+        }
+    }
+
+    nonisolated func sendVerb(verb:String) {
+        switch(verb) {
+        case "Next","next":
+            Task {
+                await advance(by:1)
+            }
+        case "Previous","previous":
+            Task {
+                await retreat()
+            }
+        case "Skip","skip":
+            Task {
+                await advance(by:10)
+            }
+        case "Go","go":
+            Task {
+                await sayNext()
+            }
+
+        default: break
+        }
+    }
+    
+    private func setCurrentLineValues() {
+        var pulls: String = ""
+        var ups: String = ""
+        var downs: String = ""
+        for s in imline[currentLineNum] {
+            pulls+=(s+", ")
+        }
+        for s in upline[currentLineNum] {
+            ups+=(s+", ")
+        }
+        for s in downline[currentLineNum] {
+            downs+=(s+", ")
+        }
+        setLineValues(pulls:pulls, up:ups, down:downs)
+    }
+    
+    private func buildTextRow(pick: [UInt8], offset: Int) -> [String] {
+        var col:Int = 0
+        var line:[String] = []
+        let width = pick.count
+        
+        while col < width {
+            if pick[col]==0 {
+                var start: Int = col
+                var stop: Int  = col
+                while stop < width {
+                    if stop == width-1 {
+                        break
+                    }
+                    if pick[stop+1] == 255 {
+                        break
+                    } else {
+                        stop+=1
+                    }
+                }
+                col = stop+1
+                if start==stop {
+                    line.append(String(start+offset))
+                } else {
+                    line.append(String(start+offset)+" to "+String(stop+offset))
+                }
+            } else {
+                col+=1
+            }
+        }
+        return line
+    }
+    
+    private func extractDrawPlan(width: Int, height: Int, pixels: [UInt8], offset: Int = 0, upsideDown: Bool = false) {
+        var img_array: [[UInt8]] = [[UInt8]](repeating: [UInt8](repeating: 0, count: width), count: height)
+        var next: [UInt8] = [UInt8](repeating:255,count:width)
+        var previous: [UInt8]
+        var ups:   [[UInt8]] = [[UInt8]](repeating: [UInt8](repeating: 0, count: width), count: height)
+        var downs: [[UInt8]] = [[UInt8]](repeating: [UInt8](repeating: 0, count: width), count: height)
+        
+        for row in 0...height-1 {
+            for col in  0...width-1 {
+                let colx = width-1-col // drawcords are numbered right to left
+                if upsideDown {
+                    img_array[row][col] = pixels[row*width+colx]
+                } else {
+                    let urow = height-1-row // weave from bottom up
+                    img_array[row][col] = pixels[urow*width+colx]
+                }
+            }
+        }
+
+        for row in 0...height-1 {
+            previous = next
+            for col in 0...width-1 {
+                next[col] = img_array[row][col]
+                if img_array[row][col] != previous[col] {
+                    if img_array[row][col]>0 {
+                        ups[row][col] = 1
+                    } else {
+                        downs[row][col] = 1
+                    }
+                }
+            }
+        }
+
+        for row in 0...height-1 {
+            imline.append([])
+            upline.append([])
+            downline.append([])
+
+            imline[row] = buildTextRow(pick: img_array[row], offset: offset)
+            upline[row] = buildTextRow(pick: ups[row], offset: offset)
+            downline[row] = buildTextRow(pick: downs[row], offset: offset)
+        }
+
+    }
+    func updateImage(width:Int,height:Int,imageData: [UInt8]) {
+        let startRow = currentLineNum*width
+        let endRow = startRow+width-1
+        var pixels = imageData
+        for index in startRow...endRow {
+            if pixels[index] == 255 {
+                pixels[index]=128
+            }
+        }
+        setImg(UIImage(pixels: pixels,width: width,height: height)!)
+    }
+    
+    
+    func processBitmapBody(selectedFile: URL) {
+        do {
+            if selectedFile.startAccessingSecurityScopedResource() {
+                guard let img = UIImage(data: try Data(contentsOf: selectedFile)) else { return }
+                defer { selectedFile.stopAccessingSecurityScopedResource() }
+                let imageTuple = img.pixelData()
+                let imageWidth = imageTuple.0
+                let imageHeight = imageTuple.1
+                var imageData = imageTuple.2!
+                extractDrawPlan(width: imageWidth,height: imageHeight, pixels: imageData)
+                self.pixels=imageData
+                self.width=imageWidth
+                self.height=imageHeight
+                updateImage(width:imageWidth,height:imageHeight,imageData:imageData)
+                drawDownLoaded = true
+            } else {
+                // Handle denied access
+            }
+        } catch {
+            // Handle failure.
+            print("Unable to read file contents")
+            print(error.localizedDescription)
+        }
+
+    }
+
+    nonisolated func loadDrawdown(selectedFile: URL)  {
+        Task {
+            await processBitmapBody(selectedFile: selectedFile)
+        }
+    }
+    
+    nonisolated private func setImg(_ img:UIImage) {
+        Task { @MainActor in
+            self.img=img
+        }
+    }
+}
+
+extension UIImage {
+    func pixelData() -> (Int,Int,[UInt8]?) {
+        //func pixelData() -> [[UInt8]]? {
+        let size = self.size
+        let dataSize = size.width * size.height
+        var pixelData = [UInt8](repeating: 0, count: Int(dataSize))
+        //var pixelData: [[UInt8]]
+        //pixelData = Array(repeating: Array(repeating: 0, count: Int(size.width)), count: Int(size.height))
+        let colorSpace = CGColorSpaceCreateDeviceGray()
+        let context = CGContext(data: &pixelData,
+                                width: Int(size.width),
+                                height: Int(size.height),
+                                bitsPerComponent: 8,
+                                bytesPerRow: Int(size.width),
+                                space: colorSpace,
+                                //bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue)
+                                bitmapInfo: CGImageAlphaInfo.none.rawValue)
+        guard let cgImage = self.cgImage else { return (0,0,nil) }
+        context?.draw(cgImage, in: CGRect(x: 0, y: 0, width: size.width, height: size.height))
+
+        return (Int(size.width),Int(size.height),pixelData)
+    }
+ }
+
+extension UIImage {
+    convenience init?(pixels: [UInt8], width: Int, height: Int) {
+        guard width > 0 && height > 0, pixels.count == width * height else { return nil }
+        var data = pixels
+        guard let providerRef = CGDataProvider(data: Data(bytes: &data, count: data.count) as CFData)
+            else { return nil }
+        guard let cgim = CGImage(
+            width: width,
+            height: height,
+            bitsPerComponent: 8,
+            bitsPerPixel: 8,
+            bytesPerRow: width,
+            space: CGColorSpaceCreateDeviceGray(),
+            bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue),
+            provider: providerRef,
+            decode: nil,
+            shouldInterpolate: true,
+            intent: .defaultIntent)
+        else { return nil }
+        self.init(cgImage: cgim)
+    }
+}
