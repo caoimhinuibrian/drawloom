@@ -80,6 +80,7 @@ struct ContentView: View {
                     //drawdownModel.setRecognizer(recognizer: speechRecognizer)
                     drawdownModel.loadDrawdown(selectedFile: selectedFile)
                     speechRecognizer.setDrawdown(drawdown:drawdownModel)
+                    speechRecognizer.setDelegate()
                     speechRecognizer.startTranscribing()
                 } catch {
                     // Handle failure.

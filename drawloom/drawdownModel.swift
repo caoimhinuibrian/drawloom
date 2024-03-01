@@ -15,6 +15,7 @@ actor DrawdownModel: ObservableObject {
     var recognizer:SpeechRecognizer?
     private var width:Int = 0
     private var height:Int = 0
+    private var upsideDown:Bool = false
     private var imline:[[String]] = []
     private var upline:[[String]] = []
     private var downline:[[String]] = []
@@ -23,8 +24,15 @@ actor DrawdownModel: ObservableObject {
     @MainActor @Published var pulledLine:String = ""
     private var releaseLine:String = ""
     private var drawLine:String = ""
+    var speaker:Speaker = Speaker.shared
     var synthesizer = AVSpeechSynthesizer()
-
+    var utterancePosition:Int = 0
+    enum UtteranceType:Int {
+        case Release = 1, Draw, Pulled, Empty
+    }
+    var utteranceType:UtteranceType = UtteranceType.Release
+    private var restart: () -> Void = {() in }
+    
     private func setLineValues(pulls:String, up:String, down:String) {
         Task { @MainActor in
             self.pulledLine=pulls
@@ -45,16 +53,61 @@ actor DrawdownModel: ObservableObject {
         self.recognizer=recognizer
     }
     
-    func advance(by:Int) {
-        if currentLineNum<width-by {
-            currentLineNum+=by
+    func move(delta:Int) {
+        if (currentLineNum+delta<height) && (currentLineNum+delta>=0) {
+            currentLineNum+=delta
             updateImage(width:width,height:height,imageData:pixels!)
             setCurrentLineValues()
         }
+        speaker.speak(wordsToSpeak:"OK")
     }
 
+    func checkUtteranceStatus() -> (String, [String]) {
+        var prefix:String = ""
+        var range:[String] = []
+        switch(utteranceType) {
+        case .Release:
+            prefix = "Release"
+            range = upline[currentLineNum]
+        case .Draw:
+            prefix = "Draw"
+            range = downline[currentLineNum]
+        case .Pulled:
+            prefix = "Pulled"
+            range = imline[currentLineNum]
+        case .Empty:
+            prefix = "End of pick"
+            range = [""]
+        }
+        if (utterancePosition >= range.count) && (utteranceType != .Empty)  {
+            utteranceType = UtteranceType(rawValue: utteranceType.rawValue+1)!
+            utterancePosition = 0
+            switch(utteranceType) {
+            case .Release:
+                prefix = "Release"
+                range = upline[currentLineNum]
+            case .Draw:
+                prefix = "Draw"
+                range = downline[currentLineNum]
+            case .Pulled:
+                prefix = "Pulled"
+                range = imline[currentLineNum]
+            case .Empty:
+                prefix = "End of pick"
+                range = [""]
+            }
+        }
+        return(prefix,range)
+    }
+    
     func sayNext() {
-        var wordsToSpeak:String = "Release "+releaseLine
+        var prefix:String = ""
+        var range:[String] = []
+        (prefix,range) = checkUtteranceStatus()
+        var wordsToSpeak:String = prefix+range[utterancePosition]
+        speaker.speak(wordsToSpeak:wordsToSpeak)
+        
+        /*
         let utterance = AVSpeechUtterance(string: wordsToSpeak)
         // Configure the utterance.
         utterance.rate = 0.57
@@ -63,8 +116,8 @@ actor DrawdownModel: ObservableObject {
         utterance.volume = 0.8
 
 
-        // Retrieve the British English voice.
-        let voice = AVSpeechSynthesisVoice(language: "en-GB")
+        // Retrieve the Irish voice.
+        let voice = AVSpeechSynthesisVoice(language: "en-IE")
 
 
         // Assign the voice to the utterance.
@@ -74,27 +127,24 @@ actor DrawdownModel: ObservableObject {
 
         // Tell the synthesizer to speak the utterance.
         synthesizer.speak(utterance)
+         */
+        utterancePosition+=1
     }
     
-    func retreat() {
-        if currentLineNum>0 {
-            current-=1
-        }
-    }
-
     nonisolated func sendVerb(verb:String) {
+        //self.restart = restart
         switch(verb) {
         case "Next","next":
             Task {
-                await advance(by:1)
+                await move(delta:1)
             }
         case "Previous","previous":
             Task {
-                await retreat()
+                await move(delta:-1)
             }
         case "Skip","skip":
             Task {
-                await advance(by:10)
+                await move(delta:10)
             }
         case "Go","go":
             Task {
@@ -128,13 +178,13 @@ actor DrawdownModel: ObservableObject {
         
         while col < width {
             if pick[col]==0 {
-                var start: Int = col
+                let start: Int = col
                 var stop: Int  = col
                 while stop < width {
                     if stop == width-1 {
                         break
                     }
-                    if pick[stop+1] == 255 {
+                    if pick[stop+1] > 0 {
                         break
                     } else {
                         stop+=1
@@ -153,10 +203,9 @@ actor DrawdownModel: ObservableObject {
         return line
     }
     
-    private func extractDrawPlan(width: Int, height: Int, pixels: [UInt8], offset: Int = 0, upsideDown: Bool = false) {
+    private func extractDrawPlan(width: Int, height: Int, pixels: [UInt8], offset: Int = 0) {
         var img_array: [[UInt8]] = [[UInt8]](repeating: [UInt8](repeating: 0, count: width), count: height)
-        var next: [UInt8] = [UInt8](repeating:255,count:width)
-        var previous: [UInt8]
+        var previous: [UInt8] = [UInt8](repeating:255,count:width)
         var ups:   [[UInt8]] = [[UInt8]](repeating: [UInt8](repeating: 0, count: width), count: height)
         var downs: [[UInt8]] = [[UInt8]](repeating: [UInt8](repeating: 0, count: width), count: height)
         
@@ -173,9 +222,7 @@ actor DrawdownModel: ObservableObject {
         }
 
         for row in 0...height-1 {
-            previous = next
             for col in 0...width-1 {
-                next[col] = img_array[row][col]
                 if img_array[row][col] != previous[col] {
                     if img_array[row][col]>0 {
                         ups[row][col] = 1
@@ -183,6 +230,7 @@ actor DrawdownModel: ObservableObject {
                         downs[row][col] = 1
                     }
                 }
+                previous[col] = img_array[row][col]
             }
         }
 
@@ -198,10 +246,11 @@ actor DrawdownModel: ObservableObject {
 
     }
     func updateImage(width:Int,height:Int,imageData: [UInt8]) {
-        let startRow = currentLineNum*width
-        let endRow = startRow+width-1
+        let lineNum = upsideDown ? currentLineNum : height-currentLineNum-1
+        let startPos = lineNum*width
+        let endPos = startPos+width-1
         var pixels = imageData
-        for index in startRow...endRow {
+        for index in startPos...endPos {
             if pixels[index] == 255 {
                 pixels[index]=128
             }

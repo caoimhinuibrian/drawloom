@@ -35,6 +35,7 @@ actor SpeechRecognizer: ObservableObject {
     private var request: SFSpeechAudioBufferRecognitionRequest?
     private var task: SFSpeechRecognitionTask?
     private let recognizer: SFSpeechRecognizer?
+    private let speaker:Speaker = Speaker.shared
     @MainActor @Published var verb:String = ""
     
     @MainActor func getTranscript() -> String {
@@ -181,7 +182,7 @@ actor SpeechRecognizer: ObservableObject {
             await reset()
             await drawdown!.sendVerb(verb:verb)
             print("reset done in setVerb")
-            startTranscribing()
+            //startTranscribing()
         }
     }
     
@@ -193,6 +194,10 @@ actor SpeechRecognizer: ObservableObject {
     
     func actualSetDrawdown(drawdown:DrawdownModel) {
         self.drawdown=drawdown
+    }
+    
+    nonisolated func setDelegate() {
+        speaker.setDelegate(restart:{Task {@MainActor in self.startTranscribing()}})
     }
     
     nonisolated private func transcribe(_ message: String) {

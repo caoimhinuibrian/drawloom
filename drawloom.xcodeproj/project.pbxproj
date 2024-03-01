@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		1F23FF632B90296500E914BB /* drawloomApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F23FF622B90296500E914BB /* drawloomApp.swift */; };
+		1F23FF652B9168B600E914BB /* Speaker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F23FF642B9168B600E914BB /* Speaker.swift */; };
 		1F3BD6942B894B9200F3EA29 /* speechRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F3BD6932B894B9200F3EA29 /* speechRecognizer.swift */; };
 		1F3BD6982B8D8BF000F3EA29 /* drawdownModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F3BD6972B8D8BF000F3EA29 /* drawdownModel.swift */; };
 		1FCD8B622B857FDC00642A1C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FCD8B612B857FDC00642A1C /* ContentView.swift */; };
@@ -20,6 +21,7 @@
 
 /* Begin PBXFileReference section */
 		1F23FF622B90296500E914BB /* drawloomApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = drawloomApp.swift; sourceTree = "<group>"; };
+		1F23FF642B9168B600E914BB /* Speaker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Speaker.swift; sourceTree = "<group>"; };
 		1F3BD6932B894B9200F3EA29 /* speechRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = speechRecognizer.swift; sourceTree = "<group>"; };
 		1F3BD6972B8D8BF000F3EA29 /* drawdownModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = drawdownModel.swift; sourceTree = "<group>"; };
 		1FCD8B5C2B857FDC00642A1C /* drawloom.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = drawloom.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -72,6 +74,7 @@
 				1FCD8B6D2B85864900642A1C /* drawloomActions.swift */,
 				1FCD8B702B86A2B800642A1C /* inputDocument.swift */,
 				1F3BD6972B8D8BF000F3EA29 /* drawdownModel.swift */,
+				1F23FF642B9168B600E914BB /* Speaker.swift */,
 			);
 			path = drawloom;
 			sourceTree = "<group>";
@@ -159,6 +162,7 @@
 				1FCD8B712B86A2B800642A1C /* inputDocument.swift in Sources */,
 				1FCD8B6E2B85864900642A1C /* drawloomActions.swift in Sources */,
 				1F3BD6982B8D8BF000F3EA29 /* drawdownModel.swift in Sources */,
+				1F23FF652B9168B600E914BB /* Speaker.swift in Sources */,
 				1F23FF632B90296500E914BB /* drawloomApp.swift in Sources */,
 				1F3BD6942B894B9200F3EA29 /* speechRecognizer.swift in Sources */,
 			);
