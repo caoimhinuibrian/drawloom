@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesViewState
+   version = "1.0">
+   <ContextStates>
+      <ContextState
+         contextName = "DrawdownModel.extractDrawPlan(width:height:pixels:offset:):drawdownModel.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "pixels[urow*width+colx]">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "DrawdownModel.advance(by:):drawdownModel.swift">
+      </ContextState>
+      <ContextState
+         contextName = "DrawdownModel.sayNext():drawdownModel.swift">
+      </ContextState>
+      <ContextState
+         contextName = "Speaker.speak(wordsToSpeak:):Speaker.swift">
+      </ContextState>
+   </ContextStates>
+</VariablesViewState>

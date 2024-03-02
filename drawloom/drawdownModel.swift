@@ -16,6 +16,7 @@ actor DrawdownModel: ObservableObject {
     private var width:Int = 0
     private var height:Int = 0
     private var upsideDown:Bool = false
+    var offset:Int
     private var imline:[[String]] = []
     private var upline:[[String]] = []
     private var downline:[[String]] = []
@@ -32,6 +33,10 @@ actor DrawdownModel: ObservableObject {
     }
     var utteranceType:UtteranceType = UtteranceType.Release
     private var restart: () -> Void = {() in }
+    
+    init(offset:Int) {
+        self.offset = offset
+    }
     
     private func setLineValues(pulls:String, up:String, down:String) {
         Task { @MainActor in
@@ -203,11 +208,11 @@ actor DrawdownModel: ObservableObject {
         return line
     }
     
-    private func extractDrawPlan(width: Int, height: Int, pixels: [UInt8], offset: Int = 0) {
+    private func extractDrawPlan(width: Int, height: Int, pixels: [UInt8], offset: Int = 1) {
         var img_array: [[UInt8]] = [[UInt8]](repeating: [UInt8](repeating: 0, count: width), count: height)
         var previous: [UInt8] = [UInt8](repeating:255,count:width)
-        var ups:   [[UInt8]] = [[UInt8]](repeating: [UInt8](repeating: 0, count: width), count: height)
-        var downs: [[UInt8]] = [[UInt8]](repeating: [UInt8](repeating: 0, count: width), count: height)
+        var ups:   [[UInt8]] = [[UInt8]](repeating: [UInt8](repeating: 255, count: width), count: height)
+        var downs: [[UInt8]] = [[UInt8]](repeating: [UInt8](repeating: 255, count: width), count: height)
         
         for row in 0...height-1 {
             for col in  0...width-1 {
@@ -225,9 +230,9 @@ actor DrawdownModel: ObservableObject {
             for col in 0...width-1 {
                 if img_array[row][col] != previous[col] {
                     if img_array[row][col]>0 {
-                        ups[row][col] = 1
+                        ups[row][col] = 0
                     } else {
-                        downs[row][col] = 1
+                        downs[row][col] = 0
                     }
                 }
                 previous[col] = img_array[row][col]

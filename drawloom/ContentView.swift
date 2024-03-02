@@ -12,20 +12,19 @@ import Speech
 
 //var line = "first line"
 struct ContentView: View {
-    @State var line = ""
-    @State var spoken = "nothing yet"
-    @State var progress = "uninitialized"
-    @State var speechStatus = "not requested"
-    @State private var document: InputDocument = InputDocument(input: "")
-    @State private var isImporting: Bool = false
-    @State private var isRecording = false
-    @State private var recognizedText = ""
-    @State private var speechEnabled: Bool = false
-    @State private var recognizerTask:SFSpeechRecognitionTask?
     @StateObject var speechRecognizer:SpeechRecognizer = SpeechRecognizer()
-    @StateObject var drawdownModel:DrawdownModel = DrawdownModel()
-    @State private var img:UIImage = UIImage()
-    @State private var scale: CGFloat = 6
+    @StateObject var drawdownModel:DrawdownModel
+    @State private var viewModel = ViewModel()
+    
+    private static let formatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        return formatter
+    }()
+
+    init() {
+        _drawdownModel = StateObject(wrappedValue: DrawdownModel(offset:1))
+    }
     
     var body: some View {
         VStack {
@@ -42,14 +41,14 @@ struct ContentView: View {
 
                 
             }
-            Text("Say 'hello' or 'goodbye'")
-                .font(.title)
+            
+            TextField("Offset Value", value: $viewModel.offset, formatter: Self.formatter)
             
             Button(action: {
                 recordButtonAction()
             }
             ) {
-                Text(isRecording ? "Stop Recording" : "Start Recording")
+                Text($viewModel.isRecording ? "Stop Recording" : "Start Recording")
             }
             //.onAppear() {
             //    setupSpeech()
@@ -90,13 +89,18 @@ struct ContentView: View {
             }
             HStack {
                 Button("Next") {
-                    advance()
-                    line = drawdownModel.pulledLine
+                    Task {
+                        await drawdownModel.move(delta:1)
+                        line = "PULLED: "+drawdownModel.pulledLine
+                    }
                 }
                 Button("Previous") {
-                    retreat()
-                    line = drawdownModel.pulledLine
+                    Task {
+                        await drawdownModel.move(delta:-1)
+                        line = "PULLED: "+drawdownModel.pulledLine
+                    }
                 }
+                Text(line).font(.title)
             }
             .padding()
             VStack {
