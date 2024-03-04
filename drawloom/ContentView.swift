@@ -14,8 +14,21 @@ import Speech
 struct ContentView: View {
     @StateObject var speechRecognizer:SpeechRecognizer = SpeechRecognizer()
     @StateObject var drawdownModel:DrawdownModel
-    @State private var viewModel = ViewModel()
-    
+    @State var line = ""
+    @State var spoken = "nothing yet"
+    @State var progress = "uninitialized"
+    @State var speechStatus = "not requested"
+    @State var document: InputDocument = InputDocument(input: "")
+    @State var isImporting: Bool = false
+    @State var isRecording = false
+    @State var recognizedText = ""
+    @State var speechEnabled: Bool = false
+    @State var recognizerTask:SFSpeechRecognitionTask?
+    @State var img:UIImage = UIImage()
+    @State var scale: CGFloat = 6
+    @State var offset: Int = 1
+    @State var floatOffset = 1.0
+
     private static let formatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
@@ -41,14 +54,42 @@ struct ContentView: View {
 
                 
             }
+            Slider(
+                value: $floatOffset,
+                in: 1...100
+            )
+            {
+                Text("Offset")
+            } minimumValueLabel: {
+                Text("0")
+            } maximumValueLabel: {
+                Text("100")
+            } onEditingChanged: { editing in
+                offset = Int(floatOffset)
+                drawdownModel.setOffset(offset:offset)
+            }.background(Color.yellow).frame(width:800)
+            Text("Offset set to \(offset)")
             
-            TextField("Offset Value", value: $viewModel.offset, formatter: Self.formatter)
+            Slider(
+                value: $scale,
+                in: 1...20
+            ) {
+                Text("Scale")
+            } minimumValueLabel: {
+                Text("0")
+            } maximumValueLabel: {
+                Text("20")
+            }.background(Color.red).frame(width:800)
+            Text("Scale set to \(scale)")
             
-            Button(action: {
+
+            TextField("Offset Value", value: $offset, formatter: Self.formatter)
+            
+            /*Button(action: {
                 recordButtonAction()
             }
             ) {
-                Text($viewModel.isRecording ? "Stop Recording" : "Start Recording")
+                Text(isRecording ? "Stop Recording" : "Start Recording")
             }
             //.onAppear() {
             //    setupSpeech()
@@ -57,7 +98,7 @@ struct ContentView: View {
             .background(Color.blue)
             .foregroundColor(.white)
             .clipShape(Capsule())
-            
+            */
             Text("Current Verb is \(speechRecognizer.verb)")
             Text(recognizedText)
                 .font(.title)

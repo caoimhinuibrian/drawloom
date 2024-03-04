@@ -48,6 +48,17 @@ actor DrawdownModel: ObservableObject {
         }
     }
     
+    
+    nonisolated func setOffset(offset:Int) {
+        Task {
+            await setOffsetActually(offset:offset)
+        }
+    }
+    
+    func setOffsetActually(offset:Int) {
+        self.offset=offset
+    }
+    
     nonisolated func setRecognizer(recognizer:SpeechRecognizer) {
         Task {
             await actualSetRecognizer(recognizer:recognizer)
