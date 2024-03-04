@@ -9,9 +9,16 @@ import SwiftUI
 
 @main
 struct drawloomApp: App {
+    var viewables:DrawdownViewables
+    var drawdownModel:DrawdownModel
+    
+    init() {
+        viewables = DrawdownViewables()
+        drawdownModel = DrawdownModel(offset:1, viewables:viewables)
+    }
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(viewables:viewables,model:drawdownModel)
         }
     }
 }

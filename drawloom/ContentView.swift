@@ -12,8 +12,9 @@ import Speech
 
 //var line = "first line"
 struct ContentView: View {
-    @StateObject var speechRecognizer:SpeechRecognizer = SpeechRecognizer()
-    @StateObject var drawdownModel:DrawdownModel
+    var speechRecognizer:SpeechRecognizer = SpeechRecognizer()
+    @State var drawdownViewables:DrawdownViewables
+    @State var drawdownModel:DrawdownModel
     @State var line = ""
     @State var spoken = "nothing yet"
     @State var progress = "uninitialized"
@@ -35,20 +36,21 @@ struct ContentView: View {
         return formatter
     }()
 
-    init() {
-        _drawdownModel = StateObject(wrappedValue: DrawdownModel(offset:1))
+    init(viewables:DrawdownViewables,model:DrawdownModel) {
+        self.drawdownModel = model
+        self.drawdownViewables = viewables
     }
     
     var body: some View {
         VStack {
             ScrollView([.horizontal, .vertical], showsIndicators: false) {
-                Image(uiImage: drawdownModel.img)
+                Image(uiImage: drawdownViewables.img)
                     .resizable()
-                    .frame(width: drawdownModel.img.size.width, height: drawdownModel.img.size.height)
+                    .frame(width: drawdownViewables.img.size.width, height: drawdownViewables.img.size.height)
                     .scaleEffect(self.scale)
                     .frame (
-                        width: drawdownModel.img.size.width * self.scale,
-                        height: drawdownModel.img.size.height * self.scale
+                        width: drawdownViewables.img.size.width * self.scale,
+                        height: drawdownViewables.img.size.height * self.scale
                         )
                     
 
@@ -117,7 +119,6 @@ struct ContentView: View {
             ) { result in
                 do {
                     guard let selectedFile: URL = try result.get().first else { return }
-                    //drawdownModel.setRecognizer(recognizer: speechRecognizer)
                     drawdownModel.loadDrawdown(selectedFile: selectedFile)
                     speechRecognizer.setDrawdown(drawdown:drawdownModel)
                     speechRecognizer.setDelegate()
@@ -132,20 +133,20 @@ struct ContentView: View {
                 Button("Next") {
                     Task {
                         await drawdownModel.move(delta:1)
-                        line = "PULLED: "+drawdownModel.pulledLine
+                        line = "PULLED: "+drawdownViewables.pulledLine
                     }
                 }
                 Button("Previous") {
                     Task {
                         await drawdownModel.move(delta:-1)
-                        line = "PULLED: "+drawdownModel.pulledLine
+                        line = "PULLED: "+drawdownViewables.pulledLine
                     }
                 }
                 Text(line).font(.title)
             }
             .padding()
             VStack {
-                Text(drawdownModel.pulledLine)
+                Text(drawdownViewables.pulledLine)
                 Text(spoken)
                 Text(progress)
                 Text(speechStatus)

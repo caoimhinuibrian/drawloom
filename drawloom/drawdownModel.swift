@@ -10,7 +10,8 @@ import Speech
 import SwiftUI
 
 actor DrawdownModel: ObservableObject {
-    @MainActor @Published  var img:UIImage = UIImage()
+    //@MainActor @Published  var img:UIImage = UIImage()
+    var viewables:DrawdownViewables
     private var pixels:[UInt8]?
     var recognizer:SpeechRecognizer?
     private var width:Int = 0
@@ -22,7 +23,7 @@ actor DrawdownModel: ObservableObject {
     private var downline:[[String]] = []
     private var drawDownLoaded: Bool = false
     private var currentLineNum: Int = 0
-    @MainActor @Published var pulledLine:String = ""
+    //@MainActor @Published var pulledLine:String = ""
     private var releaseLine:String = ""
     private var drawLine:String = ""
     var speaker:Speaker = Speaker.shared
@@ -34,13 +35,14 @@ actor DrawdownModel: ObservableObject {
     var utteranceType:UtteranceType = UtteranceType.Release
     private var restart: () -> Void = {() in }
     
-    init(offset:Int) {
+    init(offset:Int, viewables:DrawdownViewables) {
         self.offset = offset
+        self.viewables = viewables
     }
     
     private func setLineValues(pulls:String, up:String, down:String) {
         Task { @MainActor in
-            self.pulledLine=pulls
+            await viewables.pulledLine=pulls
         }
         Task {
             self.releaseLine=up
@@ -120,7 +122,7 @@ actor DrawdownModel: ObservableObject {
         var prefix:String = ""
         var range:[String] = []
         (prefix,range) = checkUtteranceStatus()
-        var wordsToSpeak:String = prefix+range[utterancePosition]
+        let wordsToSpeak:String = prefix+range[utterancePosition]
         speaker.speak(wordsToSpeak:wordsToSpeak)
         
         /*
@@ -283,7 +285,7 @@ actor DrawdownModel: ObservableObject {
                 let imageTuple = img.pixelData()
                 let imageWidth = imageTuple.0
                 let imageHeight = imageTuple.1
-                var imageData = imageTuple.2!
+                let imageData = imageTuple.2!
                 extractDrawPlan(width: imageWidth,height: imageHeight, pixels: imageData)
                 self.pixels=imageData
                 self.width=imageWidth
@@ -309,7 +311,7 @@ actor DrawdownModel: ObservableObject {
     
     nonisolated private func setImg(_ img:UIImage) {
         Task { @MainActor in
-            self.img=img
+            await viewables.img=img
         }
     }
 }
