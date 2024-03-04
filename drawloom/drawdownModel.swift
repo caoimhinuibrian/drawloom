@@ -8,31 +8,31 @@
 import Foundation
 import Speech
 import SwiftUI
+import SwiftData
 
+//@Model
 actor DrawdownModel: ObservableObject {
-    //@MainActor @Published  var img:UIImage = UIImage()
-    var viewables:DrawdownViewables
+    private var viewables:DrawdownViewables
     private var pixels:[UInt8]?
-    var recognizer:SpeechRecognizer?
+    private var recognizer:SpeechRecognizer?
     private var width:Int = 0
     private var height:Int = 0
     private var upsideDown:Bool = false
-    var offset:Int
+    private var offset:Int
     private var imline:[[String]] = []
     private var upline:[[String]] = []
     private var downline:[[String]] = []
     private var drawDownLoaded: Bool = false
     private var currentLineNum: Int = 0
-    //@MainActor @Published var pulledLine:String = ""
     private var releaseLine:String = ""
     private var drawLine:String = ""
-    var speaker:Speaker = Speaker.shared
-    var synthesizer = AVSpeechSynthesizer()
-    var utterancePosition:Int = 0
+    private var speaker:Speaker = Speaker.shared
+    private var synthesizer = AVSpeechSynthesizer()
+    private var utterancePosition:Int = 0
     enum UtteranceType:Int {
         case Release = 1, Draw, Pulled, Empty
     }
-    var utteranceType:UtteranceType = UtteranceType.Release
+    private var utteranceType:UtteranceType = UtteranceType.Release
     private var restart: () -> Void = {() in }
     
     init(offset:Int, viewables:DrawdownViewables) {
@@ -41,10 +41,8 @@ actor DrawdownModel: ObservableObject {
     }
     
     private func setLineValues(pulls:String, up:String, down:String) {
-        Task { @MainActor in
-            await viewables.pulledLine=pulls
-        }
         Task {
+            viewables.pulledLine=pulls
             self.releaseLine=up
             self.drawLine=down
         }
