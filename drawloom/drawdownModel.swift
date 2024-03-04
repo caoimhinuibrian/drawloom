@@ -11,7 +11,7 @@ import SwiftUI
 import SwiftData
 
 //@Model
-actor DrawdownModel: ObservableObject {
+class DrawdownModel: ObservableObject {
     private var viewables:DrawdownViewables
     private var pixels:[UInt8]?
     private var recognizer:SpeechRecognizer?
@@ -49,23 +49,11 @@ actor DrawdownModel: ObservableObject {
     }
     
     
-    nonisolated func setOffset(offset:Int) {
-        Task {
-            await setOffsetActually(offset:offset)
-        }
-    }
-    
-    func setOffsetActually(offset:Int) {
+    func setOffset(offset:Int) {
         self.offset=offset
     }
     
-    nonisolated func setRecognizer(recognizer:SpeechRecognizer) {
-        Task {
-            await actualSetRecognizer(recognizer:recognizer)
-        }
-    }
-    
-    func actualSetRecognizer(recognizer:SpeechRecognizer) {
+    func setRecognizer(recognizer:SpeechRecognizer) {
         self.recognizer=recognizer
     }
     
@@ -147,26 +135,16 @@ actor DrawdownModel: ObservableObject {
         utterancePosition+=1
     }
     
-    nonisolated func sendVerb(verb:String) {
-        //self.restart = restart
+    func sendVerb(verb:String) {
         switch(verb) {
         case "Next","next":
-            Task {
-                await move(delta:1)
-            }
+            move(delta:1)
         case "Previous","previous":
-            Task {
-                await move(delta:-1)
-            }
+            move(delta:-1)
         case "Skip","skip":
-            Task {
-                await move(delta:10)
-            }
+            move(delta:10)
         case "Go","go":
-            Task {
-                await sayNext()
-            }
-
+            sayNext()
         default: break
         }
     }
@@ -301,16 +279,12 @@ actor DrawdownModel: ObservableObject {
 
     }
 
-    nonisolated func loadDrawdown(selectedFile: URL)  {
-        Task {
-            await processBitmapBody(selectedFile: selectedFile)
-        }
+    func loadDrawdown(selectedFile: URL)  {
+        processBitmapBody(selectedFile: selectedFile)
     }
     
-    nonisolated private func setImg(_ img:UIImage) {
-        Task { @MainActor in
-            await viewables.img=img
-        }
+    private func setImg(_ img:UIImage) {
+        viewables.img=img
     }
 }
 

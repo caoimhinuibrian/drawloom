@@ -131,16 +131,12 @@ struct ContentView: View {
             }
             HStack {
                 Button("Next") {
-                    Task {
-                        await drawdownModel.move(delta:1)
+                        drawdownModel.move(delta:1)
                         line = "PULLED: "+drawdownViewables.pulledLine
-                    }
                 }
                 Button("Previous") {
-                    Task {
-                        await drawdownModel.move(delta:-1)
+                        drawdownModel.move(delta:-1)
                         line = "PULLED: "+drawdownViewables.pulledLine
-                    }
                 }
                 Text(line).font(.title)
             }
