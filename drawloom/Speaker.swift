@@ -46,6 +46,7 @@ final class Speaker: NSObject, AVSpeechSynthesizerDelegate {
     }
     
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+        print("in finished utterance callback")
         restart()
     }
     

@@ -6,19 +6,24 @@
 //
 
 import SwiftUI
+import SwiftData
 
 @main
 struct drawloomApp: App {
-    var viewables:DrawdownViewables
-    var drawdownModel:DrawdownModel
-    
+    // this hack prevents an uninitialized container
+    let modelContainer: ModelContainer
     init() {
-        viewables = DrawdownViewables()
-        drawdownModel = DrawdownModel(offset:1, viewables:viewables)
+        do {
+            modelContainer = try ModelContainer(for: DrawdownData.self)
+        } catch {
+            fatalError("could not initialize ModelContainer")
+        }
     }
     var body: some Scene {
         WindowGroup {
-            ContentView(viewables:viewables,model:drawdownModel)
+            ContentView()
+                .modelContainer(modelContainer)
+                //.modelContainer(for:DrawdownData.self)
         }
     }
 }

@@ -11,8 +11,10 @@
 		1F23FF652B9168B600E914BB /* Speaker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F23FF642B9168B600E914BB /* Speaker.swift */; };
 		1F23FF672B92C03700E914BB /* ContentView-ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F23FF662B92C03700E914BB /* ContentView-ViewModel.swift */; };
 		1F23FF6E2B956D1F00E914BB /* DrawdownViewables.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F23FF6D2B956D1F00E914BB /* DrawdownViewables.swift */; };
+		1F30C9EF2B9A53A000FAEEB0 /* ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F30C9EE2B9A53A000FAEEB0 /* ViewModel.swift */; };
 		1F3BD6942B894B9200F3EA29 /* speechRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F3BD6932B894B9200F3EA29 /* speechRecognizer.swift */; };
 		1F3BD6982B8D8BF000F3EA29 /* drawdownModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F3BD6972B8D8BF000F3EA29 /* drawdownModel.swift */; };
+		1F884A3A2B96A19B001A97D8 /* DrawdownData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F884A392B96A19B001A97D8 /* DrawdownData.swift */; };
 		1FCD8B622B857FDC00642A1C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FCD8B612B857FDC00642A1C /* ContentView.swift */; };
 		1FCD8B642B857FDE00642A1C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1FCD8B632B857FDE00642A1C /* Assets.xcassets */; };
 		1FCD8B672B857FDE00642A1C /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1FCD8B662B857FDE00642A1C /* Preview Assets.xcassets */; };
@@ -25,8 +27,10 @@
 		1F23FF642B9168B600E914BB /* Speaker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Speaker.swift; sourceTree = "<group>"; };
 		1F23FF662B92C03700E914BB /* ContentView-ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ContentView-ViewModel.swift"; sourceTree = "<group>"; };
 		1F23FF6D2B956D1F00E914BB /* DrawdownViewables.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawdownViewables.swift; sourceTree = "<group>"; };
+		1F30C9EE2B9A53A000FAEEB0 /* ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel.swift; sourceTree = "<group>"; };
 		1F3BD6932B894B9200F3EA29 /* speechRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = speechRecognizer.swift; sourceTree = "<group>"; };
 		1F3BD6972B8D8BF000F3EA29 /* drawdownModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = drawdownModel.swift; sourceTree = "<group>"; };
+		1F884A392B96A19B001A97D8 /* DrawdownData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawdownData.swift; sourceTree = "<group>"; };
 		1FCD8B5C2B857FDC00642A1C /* drawloom.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = drawloom.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1FCD8B612B857FDC00642A1C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		1FCD8B632B857FDE00642A1C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -78,6 +82,8 @@
 				1F23FF642B9168B600E914BB /* Speaker.swift */,
 				1F23FF662B92C03700E914BB /* ContentView-ViewModel.swift */,
 				1F23FF6D2B956D1F00E914BB /* DrawdownViewables.swift */,
+				1F884A392B96A19B001A97D8 /* DrawdownData.swift */,
+				1F30C9EE2B9A53A000FAEEB0 /* ViewModel.swift */,
 			);
 			path = drawloom;
 			sourceTree = "<group>";
@@ -161,6 +167,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1F30C9EF2B9A53A000FAEEB0 /* ViewModel.swift in Sources */,
 				1FCD8B622B857FDC00642A1C /* ContentView.swift in Sources */,
 				1FCD8B712B86A2B800642A1C /* inputDocument.swift in Sources */,
 				1F23FF6E2B956D1F00E914BB /* DrawdownViewables.swift in Sources */,
@@ -168,6 +175,7 @@
 				1F23FF652B9168B600E914BB /* Speaker.swift in Sources */,
 				1F23FF632B90296500E914BB /* drawloomApp.swift in Sources */,
 				1F23FF672B92C03700E914BB /* ContentView-ViewModel.swift in Sources */,
+				1F884A3A2B96A19B001A97D8 /* DrawdownData.swift in Sources */,
 				1F3BD6942B894B9200F3EA29 /* speechRecognizer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

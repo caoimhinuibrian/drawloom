@@ -16,12 +16,10 @@
 		</dict>
 	</array>
 	<key>INIntentsSupported</key>
-	<array>
-		<string>Intent</string>
-	</array>
-    <key>NSMicrophoneUsageDescription</key>
-        <string>Used to control app</string>
-    <key>NSSpeechRecognitionUsageDescription</key>
-        <string>Used to control app</string>
+	<array/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Used to control app</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Used to control app</string>
 </dict>
 </plist>

@@ -10,95 +10,101 @@ import Speech
 import SwiftUI
 import SwiftData
 
-//@Model
 class DrawdownModel: ObservableObject {
-    private var viewables:DrawdownViewables
-    private var pixels:[UInt8]?
+    var data:DrawdownData = DrawdownData()
+    private var viewables:DrawdownViewables?
     private var recognizer:SpeechRecognizer?
-    private var width:Int = 0
-    private var height:Int = 0
-    private var upsideDown:Bool = false
-    private var offset:Int
-    private var imline:[[String]] = []
-    private var upline:[[String]] = []
-    private var downline:[[String]] = []
-    private var drawDownLoaded: Bool = false
-    private var currentLineNum: Int = 0
-    private var releaseLine:String = ""
-    private var drawLine:String = ""
     private var speaker:Speaker = Speaker.shared
     private var synthesizer = AVSpeechSynthesizer()
-    private var utterancePosition:Int = 0
+    private var viewmodel:MyViewModel
     enum UtteranceType:Int {
         case Release = 1, Draw, Pulled, Empty
     }
     private var utteranceType:UtteranceType = UtteranceType.Release
     private var restart: () -> Void = {() in }
     
-    init(offset:Int, viewables:DrawdownViewables) {
-        self.offset = offset
+    init(offset:Int, viewables:DrawdownViewables,viewmodel:MyViewModel) {
+        data.offset = offset
         self.viewables = viewables
+        self.viewmodel = viewmodel
+        utteranceType = UtteranceType.Release
+    }
+    
+    init(drawdownData:DrawdownData, viewables:DrawdownViewables,viewmodel:MyViewModel) {
+        data = drawdownData
+        self.viewables=viewables
+        self.viewmodel = viewmodel
+        utteranceType = UtteranceType(rawValue: data.utteranceRawValue)!
     }
     
     private func setLineValues(pulls:String, up:String, down:String) {
         Task {
-            viewables.pulledLine=pulls
-            self.releaseLine=up
-            self.drawLine=down
+            viewables!.pulledLine=pulls
+            data.releaseLine=up
+            data.drawLine=down
         }
     }
     
     
     func setOffset(offset:Int) {
-        self.offset=offset
+        data.offset=offset
     }
     
-    func setRecognizer(recognizer:SpeechRecognizer) {
-        self.recognizer=recognizer
-    }
+    //func setRecognizer(recognizer:SpeechRecognizer) {
+    //    self.recognizer=recognizer
+    // }
     
     func move(delta:Int) {
-        if (currentLineNum+delta<height) && (currentLineNum+delta>=0) {
-            currentLineNum+=delta
-            updateImage(width:width,height:height,imageData:pixels!)
+        if (data.currentLineNum+delta<data.height) && (data.currentLineNum+delta>=0) {
+            data.currentLineNum+=delta
+            updateImage(width:data.width,height:data.height,imageData:data.pixels)
             setCurrentLineValues()
+            utteranceType = UtteranceType.Release
+            data.utteranceRawValue = utteranceType.rawValue
         }
         speaker.speak(wordsToSpeak:"OK")
     }
 
+    func notRecognized() {
+        speaker.speak(wordsToSpeak:"I don't recognize that verb, sorry!")
+    }
+    
     func checkUtteranceStatus() -> (String, [String]) {
         var prefix:String = ""
         var range:[String] = []
         switch(utteranceType) {
         case .Release:
             prefix = "Release"
-            range = upline[currentLineNum]
+            range = data.upline[data.currentLineNum]
         case .Draw:
             prefix = "Draw"
-            range = downline[currentLineNum]
+            range = data.downline[data.currentLineNum]
         case .Pulled:
             prefix = "Pulled"
-            range = imline[currentLineNum]
+            range = data.imline[data.currentLineNum]
         case .Empty:
             prefix = "End of pick"
             range = [""]
+            data.utterancePosition = 0
         }
-        if (utterancePosition >= range.count) && (utteranceType != .Empty)  {
+        while(data.utterancePosition >= range.count) && (utteranceType != .Empty)  {
             utteranceType = UtteranceType(rawValue: utteranceType.rawValue+1)!
-            utterancePosition = 0
+            data.utteranceRawValue = utteranceType.rawValue
+            data.utterancePosition = 0
             switch(utteranceType) {
             case .Release:
                 prefix = "Release"
-                range = upline[currentLineNum]
+                range = data.upline[data.currentLineNum]
             case .Draw:
                 prefix = "Draw"
-                range = downline[currentLineNum]
+                range = data.downline[data.currentLineNum]
             case .Pulled:
                 prefix = "Pulled"
-                range = imline[currentLineNum]
+                range = data.imline[data.currentLineNum]
             case .Empty:
                 prefix = "End of pick"
                 range = [""]
+                data.utterancePosition = 0
             }
         }
         return(prefix,range)
@@ -108,31 +114,10 @@ class DrawdownModel: ObservableObject {
         var prefix:String = ""
         var range:[String] = []
         (prefix,range) = checkUtteranceStatus()
-        let wordsToSpeak:String = prefix+range[utterancePosition]
+        print("utterancePosition \(data.utterancePosition)  size of range \(range.count)")
+        let wordsToSpeak:String = prefix+range[data.utterancePosition]
         speaker.speak(wordsToSpeak:wordsToSpeak)
-        
-        /*
-        let utterance = AVSpeechUtterance(string: wordsToSpeak)
-        // Configure the utterance.
-        utterance.rate = 0.57
-        utterance.pitchMultiplier = 0.8
-        utterance.postUtteranceDelay = 0.2
-        utterance.volume = 0.8
-
-
-        // Retrieve the Irish voice.
-        let voice = AVSpeechSynthesisVoice(language: "en-IE")
-
-
-        // Assign the voice to the utterance.
-        utterance.voice = voice
-        // Create a speech synthesizer.
-
-
-        // Tell the synthesizer to speak the utterance.
-        synthesizer.speak(utterance)
-         */
-        utterancePosition+=1
+        data.utterancePosition+=1
     }
     
     func sendVerb(verb:String) {
@@ -145,7 +130,11 @@ class DrawdownModel: ObservableObject {
             move(delta:10)
         case "Go","go":
             sayNext()
-        default: break
+        case "Repeat","repeat":
+            data.utterancePosition-=1
+            sayNext()
+        default:
+            notRecognized()
         }
     }
     
@@ -153,13 +142,13 @@ class DrawdownModel: ObservableObject {
         var pulls: String = ""
         var ups: String = ""
         var downs: String = ""
-        for s in imline[currentLineNum] {
+        for s in data.imline[data.currentLineNum] {
             pulls+=(s+", ")
         }
-        for s in upline[currentLineNum] {
+        for s in data.upline[data.currentLineNum] {
             ups+=(s+", ")
         }
-        for s in downline[currentLineNum] {
+        for s in data.downline[data.currentLineNum] {
             downs+=(s+", ")
         }
         setLineValues(pulls:pulls, up:ups, down:downs)
@@ -206,7 +195,7 @@ class DrawdownModel: ObservableObject {
         for row in 0...height-1 {
             for col in  0...width-1 {
                 let colx = width-1-col // drawcords are numbered right to left
-                if upsideDown {
+                if data.upsideDown {
                     img_array[row][col] = pixels[row*width+colx]
                 } else {
                     let urow = height-1-row // weave from bottom up
@@ -229,31 +218,43 @@ class DrawdownModel: ObservableObject {
         }
 
         for row in 0...height-1 {
-            imline.append([])
-            upline.append([])
-            downline.append([])
+            data.imline.append([])
+            data.upline.append([])
+            data.downline.append([])
 
-            imline[row] = buildTextRow(pick: img_array[row], offset: offset)
-            upline[row] = buildTextRow(pick: ups[row], offset: offset)
-            downline[row] = buildTextRow(pick: downs[row], offset: offset)
+            data.imline[row] = buildTextRow(pick: img_array[row], offset: offset)
+            data.upline[row] = buildTextRow(pick: ups[row], offset: offset)
+            data.downline[row] = buildTextRow(pick: downs[row], offset: offset)
         }
 
     }
     func updateImage(width:Int,height:Int,imageData: [UInt8]) {
-        let lineNum = upsideDown ? currentLineNum : height-currentLineNum-1
+        let lineNum = data.upsideDown ? data.currentLineNum : height-data.currentLineNum-1
         let startPos = lineNum*width
         let endPos = startPos+width-1
         var pixels = imageData
+        
+        for index in 0...pixels.count-1 {
+            if pixels[index] == 128 {
+                pixels[index]=255
+            }
+        }
+        
         for index in startPos...endPos {
             if pixels[index] == 255 {
                 pixels[index]=128
             }
         }
         setImg(UIImage(pixels: pixels,width: width,height: height)!)
+        viewmodel.ddImage = UIImage(pixels: pixels,width: width,height: height)!
+        data.pixels = pixels
+        data.width = width
+        data.height = height
     }
     
     
     func processBitmapBody(selectedFile: URL) {
+        data.selectedFile = selectedFile.lastPathComponent
         do {
             if selectedFile.startAccessingSecurityScopedResource() {
                 guard let img = UIImage(data: try Data(contentsOf: selectedFile)) else { return }
@@ -263,11 +264,11 @@ class DrawdownModel: ObservableObject {
                 let imageHeight = imageTuple.1
                 let imageData = imageTuple.2!
                 extractDrawPlan(width: imageWidth,height: imageHeight, pixels: imageData)
-                self.pixels=imageData
-                self.width=imageWidth
-                self.height=imageHeight
+                data.pixels=imageData
+                data.width=imageWidth
+                data.height=imageHeight
                 updateImage(width:imageWidth,height:imageHeight,imageData:imageData)
-                drawDownLoaded = true
+                data.drawDownLoaded = true
             } else {
                 // Handle denied access
             }
@@ -284,7 +285,7 @@ class DrawdownModel: ObservableObject {
     }
     
     private func setImg(_ img:UIImage) {
-        viewables.img=img
+        viewables!.img=img
     }
 }
 
