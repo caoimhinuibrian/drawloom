@@ -21,42 +21,6 @@ struct ExecuteCode : View {
     }
 }
 
-/*
-struct MySlider:View {
-    var condition:Bool
-    var value:Binding<CGFloat>
-    var range:ClosedRange<CGFloat>
-    var textLabel:String
-    var min:CGFloat
-    var max:CGFloat
-    
-    init(cond:Bool,value:Binding<CGFloat>,range:ClosedRange<CGFloat>,label:String,max:CGFloat,min:CGFloat)
-    {
-        condition = cond
-        self.value = value
-        self.range = range
-        textLabel = label
-        self.min = min
-        self.max = max
-    }
-    
-    @ViewBuilder
-    var body: some View {
-        if condition {
-            Slider(value:value,in:range)
-            {Text(textLabel)}
-            .minimumValueLabel {}
-            .maximumValueLabel {}
-            
-            
-        } else {
-            EmptyView()
-        }
-    }
-    
-}
-*/
-
 struct DrawdownView:View {
     var drawdown:DrawdownData
     init(drawdown:DrawdownData) {
@@ -103,7 +67,6 @@ struct MyImage:View {
 struct ContentView: View {
     @Environment(\.modelContext) var context
     var speechRecognizer:SpeechRecognizer = SpeechRecognizer()
-    //@Bindable var data:DrawdownData = DrawdownData()
     @State var data:DrawdownData? = nil
     @State var viewables:DrawdownViewables = DrawdownViewables()
     
@@ -123,7 +86,6 @@ struct ContentView: View {
     @State var offset: Int = 1
     @State var floatOffset:CGFloat = 1.0
     @StateObject var model:MyViewModel = MyViewModel()
-    //@State var ddImage:UIImage=UIImage(pixels:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], width:2, height:8)!
     @State var w:Int=2
     @State var h:Int=8
     private static let formatter: NumberFormatter = {
@@ -136,6 +98,9 @@ struct ContentView: View {
     }
     
     func setState() {
+        if allDrawdowns.count > 0 {
+            selectDrawdown(selected:allDrawdowns[0])
+        }
         let vwables = DrawdownViewables()
         let model = DrawdownModel(offset:1, viewables:viewables,viewmodel:model)
         self.drawdownModel = model
@@ -155,6 +120,7 @@ struct ContentView: View {
         self.viewables = viewables
         self.drawdownModel = DrawdownModel(drawdownData:selected, viewables:viewables, viewmodel:model)
         data = selected
+        data!.timestamp = Date()
         model.ddImage = makeImage(pixels: data!.pixels,width: data!.width,height: data!.height)!
         model.scale=data!.scale
         self.scale = model.scale
@@ -173,8 +139,8 @@ struct ContentView: View {
         return img
     }
     
-    //@Query(sort: \DrawdownData.selectedFile, order: .reverse) var allDrawdowns: [DrawdownData]
-    @Query var allDrawdowns: [DrawdownData]
+    @Query(sort: \DrawdownData.timestamp, order: .reverse) var allDrawdowns: [DrawdownData]
+    //@Query var allDrawdowns: [DrawdownData]
     var body: some View {
         VStack {
             HStack {
@@ -183,6 +149,7 @@ struct ContentView: View {
                 Spacer()
                 NavigationStack {
                     List() {
+                        //}
                         ForEach(allDrawdowns) { drawdown in
                             VStack {
                                 Text(drawdown.selectedFile).onTapGesture {selectDrawdown(selected:drawdown)}
@@ -231,8 +198,7 @@ struct ContentView: View {
                 }
                 .navigationTitle("All Drawdowns")
                 .frame(minHeight: 50, maxHeight: 200)
-                .onAppear{setState()
-                }
+                .onAppear{setState()}
                 Spacer()
             }
             ScrollView([.horizontal, .vertical], showsIndicators: true) {
@@ -259,8 +225,6 @@ struct ContentView: View {
             
             Group {
                 if let d = data {
-                    //offset = data!.offset
-                    //let dd = Binding($data)
                     Slider(
                         value: $model.floatOffset,
                         in: 1...100
@@ -308,16 +272,13 @@ struct ContentView: View {
                 }
                 Text(line).font(.title)
             }
-            //.padding()
             HStack {
                 Text("Verb: \(speechRecognizer.verb)")
                 //Text(recognizedText)
                 //    .font(.title)
                 Text(viewables.pulledLine)
             }
-            //.padding()
         }
-        
     }
     
 }

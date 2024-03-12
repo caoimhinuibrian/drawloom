@@ -12,6 +12,7 @@ import SwiftUI
 @Model
 class DrawdownData {
     var selectedFile:String = ""
+    var timestamp:Date = Date()
     var pixels:[UInt8] = [UInt8](repeating: 0, count: 44000)
     var width:Int = 200
     var height:Int = 220
