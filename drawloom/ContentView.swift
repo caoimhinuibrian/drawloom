@@ -63,7 +63,6 @@ struct MyImage:View {
     }
 }
 
-//var line = "first line"
 struct ContentView: View {
     @Environment(\.modelContext) var context
     var speechRecognizer:SpeechRecognizer = SpeechRecognizer()
@@ -72,22 +71,14 @@ struct ContentView: View {
     
     @State var drawdownModel:DrawdownModel?=nil
     @State var line = ""
-    @State var spoken = "nothing yet"
-    @State var progress = "uninitialized"
-    @State var speechStatus = "not requested"
-    @State var document: InputDocument = InputDocument(input: "")
     @State var isImporting: Bool = false
-    @State var isRecording = false
+    @State var canChangeOffset:Bool = false
     @State var recognizedText = ""
     @State var speechEnabled: Bool = false
     @State var recognizerTask:SFSpeechRecognitionTask?
-    @State var img:UIImage = UIImage()
-    @State var scale: CGFloat = 1
     @State var offset: Int = 1
     @State var floatOffset:CGFloat = 1.0
     @StateObject var model:MyViewModel = MyViewModel()
-    @State var w:Int=2
-    @State var h:Int=8
     private static let formatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
@@ -98,13 +89,13 @@ struct ContentView: View {
     }
     
     func setState() {
+        let vwables = DrawdownViewables()
+        viewables = vwables
         if allDrawdowns.count > 0 {
             selectDrawdown(selected:allDrawdowns[0])
+        } else {
+            self.drawdownModel = DrawdownModel(offset:1, viewables:viewables,viewmodel:model)
         }
-        let vwables = DrawdownViewables()
-        let model = DrawdownModel(offset:1, viewables:viewables,viewmodel:model)
-        self.drawdownModel = model
-        viewables = vwables
     }
     
     func deleteDrawdowns(_ indexSet: IndexSet) {
@@ -123,24 +114,20 @@ struct ContentView: View {
         data!.timestamp = Date()
         model.ddImage = makeImage(pixels: data!.pixels,width: data!.width,height: data!.height)!
         model.scale=data!.scale
-        self.scale = model.scale
         model.offset=data!.offset
         model.floatOffset=data!.floatOffset
         drawdownModel!.setOffset(offset:model.offset)
-        w = data!.width
-        h = data!.height
         speechRecognizer.setDrawdown(drawdown:drawdownModel!)
         speechRecognizer.setDelegate()
         speechRecognizer.startTranscribing()
     }
     
     func makeImage(pixels:[UInt8],width:Int, height:Int) -> UIImage? {
-        let img = UIImage(pixels: pixels,width: width,height: height)
+        let img = drawdownModel!.updateImage(width: width,height: height,imageData: pixels)
         return img
     }
     
     @Query(sort: \DrawdownData.timestamp, order: .reverse) var allDrawdowns: [DrawdownData]
-    //@Query var allDrawdowns: [DrawdownData]
     var body: some View {
         VStack {
             HStack {
@@ -149,7 +136,6 @@ struct ContentView: View {
                 Spacer()
                 NavigationStack {
                     List() {
-                        //}
                         ForEach(allDrawdowns) { drawdown in
                             VStack {
                                 Text(drawdown.selectedFile).onTapGesture {selectDrawdown(selected:drawdown)}
@@ -183,8 +169,6 @@ struct ContentView: View {
                             model.floatOffset=data!.floatOffset
                             drawdownModel!.setOffset(offset:model.offset)
                             
-                            w = data!.width
-                            h = data!.height
                             speechRecognizer.setDrawdown(drawdown:drawdownModel!)
                             speechRecognizer.setDelegate()
                             speechRecognizer.startTranscribing()
@@ -202,62 +186,60 @@ struct ContentView: View {
                 Spacer()
             }
             ScrollView([.horizontal, .vertical], showsIndicators: true) {
-                //                    VStack(alignment: .leading) {
                 Image(uiImage: model.ddImage)
                     .resizable()
-                    .frame(width: model.ddImage.size.width * self.scale, height: model.ddImage.size.height * self.scale)
-                //                            .scaleEffect(self.scale)
-                //                    }
-                //                .border(.red, width: 2)
-                //                Image(uiImage: model.ddImage)
-                //                    .resizable()
-                //                    .frame(width: 200,height: 220)
-                //                    .scaleEffect(self.scale)
-                /*
-                 .frame (
-                 width: CGFloat(w) * self.scale,
-                 height: CGFloat(h) * self.scale
-                 )
-                 */
+                    .frame(width: model.ddImage.size.width, height: model.ddImage.size.height)
+
             }
             .border(.blue, width: 5)
             
             
             Group {
                 if let d = data {
-                    Slider(
-                        value: $model.floatOffset,
-                        in: 1...100
-                    )
-                    {
-                        Text("Offset")
-                    } minimumValueLabel: {
-                        Text("0")
-                    } maximumValueLabel: {
-                        Text("100")
-                    } onEditingChanged: { editing in
-                        data!.floatOffset = model.floatOffset
-                        data!.offset = Int(model.floatOffset)
-                        model.offset = Int(model.floatOffset)
-                        drawdownModel!.setOffset(offset:offset)
-                    }.background(Color.yellow).frame(width:800)
+                    HStack {
+                        Slider(
+                            value: $model.floatOffset,
+                            in: 1...100
+                        )
+                        {
+                            Text("Offset")
+                        } minimumValueLabel: {
+                            Text("0")
+                        } maximumValueLabel: {
+                            Text("100")
+                        } onEditingChanged: { editing in
+                            data!.floatOffset = model.floatOffset
+                            data!.offset = Int(model.floatOffset)
+                            model.offset = Int(model.floatOffset)
+                            drawdownModel!.setOffset(offset:offset)
+                        }
+                        .background(Color.yellow).frame(width:800,alignment:.leading)
+                        .disabled(!canChangeOffset)
+                        .id(canChangeOffset)
+                        Spacer()
+                        Text("Enable:")
+                        Toggle("Enable:",isOn: $canChangeOffset).labelsHidden()
+                    }.frame(width:1100)
                     Text("Offset set to \(Int(model.floatOffset))")
                     
-                    Slider(
-                        value: $model.scale,
-                        in: 1...20
-                    ) {
-                        Text("Scale")
-                    } minimumValueLabel: {
-                        Text("0")
-                    } maximumValueLabel: {
-                        Text("20")
-                    } onEditingChanged: { editing in
-                        data!.scale = model.scale
-                        self.scale = model.scale
-                    }
-                    .background(Color.red).frame(width:800)
-                    Text("Scale set to \(model.scale)")
+                    HStack {
+                        Slider(
+                            value: $model.scale,
+                            in: 1...20
+                        ) {
+                            Text("Scale")
+                        } minimumValueLabel: {
+                            Text("0")
+                        } maximumValueLabel: {
+                            Text("20")
+                        } onEditingChanged: { editing in
+                            data!.scale = model.scale
+                            drawdownModel!.updateImage()
+                        }
+                        .background(Color.red).frame(width:800,alignment:.leading)
+                    }.frame(width:1100,alignment:.leading)
+
+                    Text("Scale set to \(Int(data!.scale))")
                 }
             }
             
@@ -274,8 +256,6 @@ struct ContentView: View {
             }
             HStack {
                 Text("Verb: \(speechRecognizer.verb)")
-                //Text(recognizedText)
-                //    .font(.title)
                 Text(viewables.pulledLine)
             }
         }

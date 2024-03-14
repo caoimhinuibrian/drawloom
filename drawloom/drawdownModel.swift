@@ -50,10 +50,6 @@ class DrawdownModel: ObservableObject {
         data.offset=offset
     }
     
-    //func setRecognizer(recognizer:SpeechRecognizer) {
-    //    self.recognizer=recognizer
-    // }
-    
     func move(delta:Int) {
         if (data.currentLineNum+delta<data.height) && (data.currentLineNum+delta>=0) {
             data.currentLineNum+=delta
@@ -228,12 +224,15 @@ class DrawdownModel: ObservableObject {
         }
 
     }
-    func updateImage(width:Int,height:Int,imageData: [UInt8]) {
+    func updateImage(width:Int,height:Int,imageData: [UInt8]) -> UIImage {
         let lineNum = data.upsideDown ? data.currentLineNum : height-data.currentLineNum-1
         let startPos = lineNum*width
         let endPos = startPos+width-1
         var pixels = imageData
-        
+        let wd = data.width
+        let hd = data.height
+        let sd = data.scale
+        print("scale is \(sd)")
         for index in 0...pixels.count-1 {
             if pixels[index] == 128 {
                 pixels[index]=255
@@ -245,15 +244,33 @@ class DrawdownModel: ObservableObject {
                 pixels[index]=128
             }
         }
+        let scale = Int(data.scale)
+        var scaledPixels:[UInt8] = [UInt8](repeating: 0, count: data.width*data.height*scale*scale)
+
+        for row in 0...data.height-1 {
+            for col in 0...data.width-1 {
+                for h in 0...scale-1 {
+                    for w in 0...scale-1 {
+                        scaledPixels[row*width*scale*scale+col*scale+h*width*scale+w]=pixels[row*width+col]
+                    }
+                }
+            }
+        }
+         
         setImg(UIImage(pixels: pixels,width: width,height: height)!)
-        viewmodel.ddImage = UIImage(pixels: pixels,width: width,height: height)!
+        viewmodel.ddImage = UIImage(pixels: scaledPixels,width: width*scale,height: height*scale)!
         data.pixels = pixels
         data.width = width
         data.height = height
+        return viewmodel.ddImage
     }
     
+    func updateImage() {
+        updateImage(width:data.width,height:data.height,imageData:data.pixels) 
+    }
     
     func processBitmapBody(selectedFile: URL) {
+        data = DrawdownData()
         data.selectedFile = selectedFile.lastPathComponent
         do {
             if selectedFile.startAccessingSecurityScopedResource() {
@@ -291,12 +308,9 @@ class DrawdownModel: ObservableObject {
 
 extension UIImage {
     func pixelData() -> (Int,Int,[UInt8]?) {
-        //func pixelData() -> [[UInt8]]? {
         let size = self.size
         let dataSize = size.width * size.height
         var pixelData = [UInt8](repeating: 0, count: Int(dataSize))
-        //var pixelData: [[UInt8]]
-        //pixelData = Array(repeating: Array(repeating: 0, count: Int(size.width)), count: Int(size.height))
         let colorSpace = CGColorSpaceCreateDeviceGray()
         let context = CGContext(data: &pixelData,
                                 width: Int(size.width),
@@ -304,7 +318,6 @@ extension UIImage {
                                 bitsPerComponent: 8,
                                 bytesPerRow: Int(size.width),
                                 space: colorSpace,
-                                //bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue)
                                 bitmapInfo: CGImageAlphaInfo.none.rawValue)
         guard let cgImage = self.cgImage else { return (0,0,nil) }
         context?.draw(cgImage, in: CGRect(x: 0, y: 0, width: size.width, height: size.height))
