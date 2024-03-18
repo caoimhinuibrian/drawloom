@@ -107,14 +107,20 @@ struct ContentView: View {
     
     func selectDrawdown(selected:DrawdownData) {
         print(selected.selectedFile)
+        print("selected: \(selected)")
+        selected.display()
         let viewables = DrawdownViewables()
         self.viewables = viewables
         self.drawdownModel = DrawdownModel(drawdownData:selected, viewables:viewables, viewmodel:model)
         data = selected
+        print("data: \(data)")
+        data!.display()
         data!.timestamp = Date()
         model.ddImage = makeImage(pixels: data!.pixels,width: data!.width,height: data!.height)!
         model.scale=data!.scale
         model.offset=data!.offset
+        model.upsideDown = data!.upsideDown
+        let o = data!.offset
         model.floatOffset=data!.floatOffset
         drawdownModel!.setOffset(offset:model.offset)
         speechRecognizer.setDrawdown(drawdown:drawdownModel!)
@@ -167,8 +173,8 @@ struct ContentView: View {
                             model.scale=data!.scale
                             model.offset=data!.offset
                             model.floatOffset=data!.floatOffset
+                            model.upsideDown=data!.upsideDown
                             drawdownModel!.setOffset(offset:model.offset)
-                            
                             speechRecognizer.setDrawdown(drawdown:drawdownModel!)
                             speechRecognizer.setDelegate()
                             speechRecognizer.startTranscribing()
@@ -197,6 +203,18 @@ struct ContentView: View {
             Group {
                 if let d = data {
                     HStack {
+                        Spacer()
+                        Text("Flip Image:")
+                        Toggle("Flip:",isOn: $model.upsideDown).labelsHidden()
+                            .onChange(of:model.upsideDown) {
+                                d.upsideDown = model.upsideDown
+                                drawdownModel!.extractDrawPlan(width: d.width,height: d.height, pixels: d.pixels)
+                                drawdownModel!.updateImage()
+                            }
+                    }
+
+
+                    HStack {
                         Slider(
                             value: $model.floatOffset,
                             in: 1...100
@@ -208,10 +226,15 @@ struct ContentView: View {
                         } maximumValueLabel: {
                             Text("100")
                         } onEditingChanged: { editing in
-                            data!.floatOffset = model.floatOffset
-                            data!.offset = Int(model.floatOffset)
-                            model.offset = Int(model.floatOffset)
-                            drawdownModel!.setOffset(offset:offset)
+                            if !editing {
+                                d.floatOffset = model.floatOffset
+                                d.offset = Int(model.floatOffset)
+                                d.display()
+                                data!.display()
+                                model.offset = Int(model.floatOffset)
+                                drawdownModel!.setOffset(offset:model.offset)
+                                drawdownModel!.extractDrawPlan(width: d.width,height: d.height, pixels: d.pixels)
+                            }
                         }
                         .background(Color.yellow).frame(width:800,alignment:.leading)
                         .disabled(!canChangeOffset)
@@ -220,6 +243,7 @@ struct ContentView: View {
                         Text("Enable:")
                         Toggle("Enable:",isOn: $canChangeOffset).labelsHidden()
                     }.frame(width:1100)
+                    
                     Text("Offset set to \(Int(model.floatOffset))")
                     
                     HStack {
@@ -233,13 +257,16 @@ struct ContentView: View {
                         } maximumValueLabel: {
                             Text("20")
                         } onEditingChanged: { editing in
-                            data!.scale = model.scale
-                            drawdownModel!.updateImage()
+                            if !editing {
+                                d.scale = model.scale
+                                drawdownModel!.updateImage()
+                            }
                         }
                         .background(Color.red).frame(width:800,alignment:.leading)
                     }.frame(width:1100,alignment:.leading)
-
+                    
                     Text("Scale set to \(Int(data!.scale))")
+                    
                 }
             }
             

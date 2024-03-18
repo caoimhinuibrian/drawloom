@@ -33,4 +33,9 @@ class DrawdownData {
     init() {
         
     }
+    
+    func display() {
+        print("DrawdownData")
+        print("{\(selectedFile), \(timestamp), \(width), \(height), \(offset), \(currentLineNum), \(utterancePosition), \(scale) ")
+    }
 }

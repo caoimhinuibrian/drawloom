@@ -13,6 +13,7 @@ class MyViewModel: ObservableObject {
     var scale: CGFloat = 1
     var offset: Int = 1
     var floatOffset: CGFloat = 1.0
+    var upsideDown:Bool = false
     func setImage(image:UIImage) {
         ddImage = image
     }

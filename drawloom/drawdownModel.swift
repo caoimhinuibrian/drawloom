@@ -47,7 +47,9 @@ class DrawdownModel: ObservableObject {
     
     
     func setOffset(offset:Int) {
+        let o = offset
         data.offset=offset
+        //extractDrawPlan(width: data.width,height: data.height, pixels: data.pixels)
     }
     
     func move(delta:Int) {
@@ -150,10 +152,11 @@ class DrawdownModel: ObservableObject {
         setLineValues(pulls:pulls, up:ups, down:downs)
     }
     
-    private func buildTextRow(pick: [UInt8], offset: Int) -> [String] {
+    private func buildTextRow(pick: [UInt8]) -> [String] {
         var col:Int = 0
         var line:[String] = []
         let width = pick.count
+        let o = data.offset
         
         while col < width {
             if pick[col]==0 {
@@ -171,9 +174,9 @@ class DrawdownModel: ObservableObject {
                 }
                 col = stop+1
                 if start==stop {
-                    line.append(String(start+offset))
+                    line.append(String(start+data.offset))
                 } else {
-                    line.append(String(start+offset)+" to "+String(stop+offset))
+                    line.append(String(start+data.offset)+" to "+String(stop+data.offset))
                 }
             } else {
                 col+=1
@@ -182,7 +185,7 @@ class DrawdownModel: ObservableObject {
         return line
     }
     
-    private func extractDrawPlan(width: Int, height: Int, pixels: [UInt8], offset: Int = 1) {
+    func extractDrawPlan(width: Int, height: Int, pixels: [UInt8]) {
         var img_array: [[UInt8]] = [[UInt8]](repeating: [UInt8](repeating: 0, count: width), count: height)
         var previous: [UInt8] = [UInt8](repeating:255,count:width)
         var ups:   [[UInt8]] = [[UInt8]](repeating: [UInt8](repeating: 255, count: width), count: height)
@@ -218,21 +221,18 @@ class DrawdownModel: ObservableObject {
             data.upline.append([])
             data.downline.append([])
 
-            data.imline[row] = buildTextRow(pick: img_array[row], offset: offset)
-            data.upline[row] = buildTextRow(pick: ups[row], offset: offset)
-            data.downline[row] = buildTextRow(pick: downs[row], offset: offset)
+            data.imline[row] = buildTextRow(pick: img_array[row])
+            data.upline[row] = buildTextRow(pick: ups[row])
+            data.downline[row] = buildTextRow(pick: downs[row])
         }
 
     }
+    
     func updateImage(width:Int,height:Int,imageData: [UInt8]) -> UIImage {
         let lineNum = data.upsideDown ? data.currentLineNum : height-data.currentLineNum-1
         let startPos = lineNum*width
         let endPos = startPos+width-1
         var pixels = imageData
-        let wd = data.width
-        let hd = data.height
-        let sd = data.scale
-        print("scale is \(sd)")
         for index in 0...pixels.count-1 {
             if pixels[index] == 128 {
                 pixels[index]=255
