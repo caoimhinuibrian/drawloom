@@ -233,31 +233,37 @@ class DrawdownModel: ObservableObject {
         let startPos = lineNum*width
         let endPos = startPos+width-1
         var pixels = imageData
-        for index in 0...pixels.count-1 {
-            if pixels[index] == 128 {
-                pixels[index]=255
-            }
-        }
-        
-        for index in startPos...endPos {
-            if pixels[index] == 255 {
-                pixels[index]=128
-            }
-        }
         let scale = Int(data.scale)
-        var scaledPixels:[UInt8] = [UInt8](repeating: 0, count: data.width*data.height*scale*scale)
-
+        var scaledPixels:[[UInt8]] = [[UInt8]](repeating:[UInt8](repeating: 0, count: 3), count: data.width*data.height*scale*scale)
+        var color:[UInt8] = [255,255,255]
         for row in 0...data.height-1 {
             for col in 0...data.width-1 {
+                if pixels[row*width+col] == 0 {
+                    color[0]=0
+                    color[1]=0
+                    color[2]=0
+                } else {
+                    if row == lineNum {
+                        color[0]=192
+                        color[1]=0
+                        color[2]=0
+                    } else {
+                        color[0]=255
+                        color[1]=255
+                        color[2]=255
+                    }
+                }
+                
                 for h in 0...scale-1 {
                     for w in 0...scale-1 {
-                        scaledPixels[row*width*scale*scale+col*scale+h*width*scale+w]=pixels[row*width+col]
+                        for c in 0...2 {
+                            scaledPixels[row*width*scale*scale+col*scale+h*width*scale+w][c]=color[c]
+                        }
                     }
                 }
             }
         }
          
-        setImg(UIImage(pixels: pixels,width: width,height: height)!)
         viewmodel.ddImage = UIImage(pixels: scaledPixels,width: width*scale,height: height*scale)!
         data.pixels = pixels
         data.width = width
@@ -266,7 +272,7 @@ class DrawdownModel: ObservableObject {
     }
     
     func updateImage() {
-        updateImage(width:data.width,height:data.height,imageData:data.pixels) 
+        updateImage(width:data.width,height:data.height,imageData:data.pixels)
     }
     
     func processBitmapBody(selectedFile: URL) {
@@ -327,22 +333,31 @@ extension UIImage {
  }
 
 extension UIImage {
-    convenience init?(pixels: [UInt8], width: Int, height: Int) {
+    convenience init?(pixels: [[UInt8]], width: Int, height: Int) {
         guard width > 0 && height > 0, pixels.count == width * height else { return nil }
         var data = pixels
-        guard let providerRef = CGDataProvider(data: Data(bytes: &data, count: data.count) as CFData)
-            else { return nil }
+        var scale = 1
+        var rgbdata = [UInt8](repeating: 0, count: width*height*3)
+
+        for i in 0...width*height-1 {
+            for j in 0...2 {
+                rgbdata[i*3+j]=pixels[i][j]
+            }
+        }
+         guard let providerRef = CGDataProvider(data: Data(bytes: &rgbdata, count: rgbdata.count) as CFData)
+
+        else { return nil }
         guard let cgim = CGImage(
             width: width,
             height: height,
             bitsPerComponent: 8,
-            bitsPerPixel: 8,
-            bytesPerRow: width,
-            space: CGColorSpaceCreateDeviceGray(),
+            bitsPerPixel: 24,
+            bytesPerRow: width*3,
+            space: CGColorSpaceCreateDeviceRGB(),
             bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue),
             provider: providerRef,
             decode: nil,
-            shouldInterpolate: true,
+            shouldInterpolate: false,
             intent: .defaultIntent)
         else { return nil }
         self.init(cgImage: cgim)

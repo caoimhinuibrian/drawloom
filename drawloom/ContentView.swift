@@ -33,36 +33,6 @@ struct DrawdownView:View {
     }
 }
 
-struct MyImage:View {
-    var data:DrawdownData
-    var p:[UInt8]
-    var h:Int
-    var w:Int
-    var unused:Int
-    init(data:DrawdownData) {
-        self.data=data
-        p=data.pixels
-        h=data.height
-        w=data.width
-        unused=0
-    }
-    var body: some View {
-        let _ =  Self._printChanges()
-        VStack {
-            ScrollView([.horizontal, .vertical]/*, showsIndicators: false*/) {
-                Image(uiImage: UIImage(pixels: data.pixels,width: data.width,height: data.height)!)
-                    .resizable()
-                    .frame(width: CGFloat(data.width), height: CGFloat(data.height))
-                    .frame (
-                        width: CGFloat(data.width),
-                        height: CGFloat(data.height)
-                        )
-            }
-            .border(.red, width: 5)
-}
-    }
-}
-
 struct ContentView: View {
     @Environment(\.modelContext) var context
     var speechRecognizer:SpeechRecognizer = SpeechRecognizer()
