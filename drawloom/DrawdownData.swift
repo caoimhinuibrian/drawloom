@@ -21,6 +21,15 @@ class DrawdownData {
     var imline:[[String]] = []
     var upline:[[String]] = []
     var downline:[[String]] = []
+    var uStart:[[[Int]]] = []
+    var uStop:[[[Int]]] = []
+    /*
+    var imStart:[[Int]] = [[]]
+    var imStop:[[Int]] = [[]]
+    var upsStart:[[Int]] = [[]]
+    var upsStop:[[Int]] = [[]]
+    var downsStart:[[Int]] = [[]]
+    var downsStop:[[Int]] = [[]]*/
     var drawDownLoaded: Bool = false
     var currentLineNum: Int = 0
     var releaseLine:String = ""
@@ -35,7 +44,11 @@ class DrawdownData {
     }
     
     func display() {
-        print("DrawdownData")
+        display(from:"")
+    }
+    
+    func display(from:String) {
+        print(from)
         print("{\(selectedFile), \(timestamp), \(width), \(height), \(offset), \(currentLineNum), \(utterancePosition), \(scale) ")
     }
 }

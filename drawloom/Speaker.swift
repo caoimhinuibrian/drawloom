@@ -33,7 +33,7 @@ final class Speaker: NSObject, AVSpeechSynthesizerDelegate {
 
 
         // Retrieve the Irish voice.
-        let voice = AVSpeechSynthesisVoice(language: "en-IE")
+        let voice = AVSpeechSynthesisVoice(language: "en-US")
 
 
         // Assign the voice to the utterance.

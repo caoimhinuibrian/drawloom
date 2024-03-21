@@ -55,10 +55,12 @@ class DrawdownModel: ObservableObject {
     func move(delta:Int) {
         if (data.currentLineNum+delta<data.height) && (data.currentLineNum+delta>=0) {
             data.currentLineNum+=delta
-            updateImage(width:data.width,height:data.height,imageData:data.pixels)
             setCurrentLineValues()
             utteranceType = UtteranceType.Release
             data.utteranceRawValue = utteranceType.rawValue
+            data.utterancePosition = 0
+            data.display()
+            updateImage()
         }
         speaker.speak(wordsToSpeak:"OK")
     }
@@ -66,7 +68,7 @@ class DrawdownModel: ObservableObject {
     func notRecognized() {
         speaker.speak(wordsToSpeak:"I don't recognize that verb, sorry!")
     }
-    
+    /*
     func checkUtteranceStatus() -> (String, [String]) {
         var prefix:String = ""
         var range:[String] = []
@@ -84,6 +86,7 @@ class DrawdownModel: ObservableObject {
             prefix = "End of pick"
             range = [""]
             data.utterancePosition = 0
+            data.display()
         }
         while(data.utterancePosition >= range.count) && (utteranceType != .Empty)  {
             utteranceType = UtteranceType(rawValue: utteranceType.rawValue+1)!
@@ -106,20 +109,114 @@ class DrawdownModel: ObservableObject {
             }
         }
         return(prefix,range)
+    }*/
+    
+    func getUtterance() -> String {
+        var utterance:String = ""
+        var prefix:String = ""
+        var range:[String]
+        
+        print("line \(data.currentLineNum)")
+        switch(utteranceType) {
+        case .Release:
+            prefix = "Release "
+            range = data.upline[data.currentLineNum]
+            for i in 0...range.count-1 {
+                print("Release: \(range[i])")
+            }
+        case .Draw:
+            prefix = "Draw "
+            range = data.downline[data.currentLineNum]
+            for i in 0...range.count-1 {
+                print("Draw: \(range[i])")
+            }
+        case .Pulled:
+            prefix = "Active cords  "
+            range = data.imline[data.currentLineNum]
+            for i in 0...range.count-1 {
+                print("Pulled: \(range[i])")
+            }
+        case .Empty:
+            range = ["End of Pick"]
+        }
+        
+        //utterance = "Section Finished"
+        data.display(from:"before update - range.count is \(range.count), prefix is \(prefix)")
+        if data.utterancePosition <= range.count-1 {
+            utterance = prefix + range[data.utterancePosition]
+            data.utterancePosition += 1
+            data.display(from:"after update")
+            if data.utterancePosition == range.count {
+                data.utterancePosition -= 1
+                utterance += " section is finished"            }
+        }
+        return utterance
     }
     
+
     func sayNext() {
+        let utterance = getUtterance()
+        speaker.speak(wordsToSpeak:utterance)
+        updateImage()
+    }
+    
+    /*
+    func sayNextOld() {
         var prefix:String = ""
         var range:[String] = []
         (prefix,range) = checkUtteranceStatus()
         print("utterancePosition \(data.utterancePosition)  size of range \(range.count)")
         let wordsToSpeak:String = prefix+range[data.utterancePosition]
         speaker.speak(wordsToSpeak:wordsToSpeak)
-        data.utterancePosition+=1
+        /*
+        if data.utterancePosition < range.count-1 {
+            data.utterancePosition+=1
+        }
+        updateImage()*/
+    }
+    */
+
+    func startDraws() {
+        utteranceType = UtteranceType.Draw
+        data.utterancePosition = 0
+        data.utteranceRawValue = utteranceType.rawValue
+        data.display()
+        updateImage()
+        speaker.speak(wordsToSpeak:"OK")
+    }
+    
+    func startReleases() {
+        utteranceType = UtteranceType.Release
+        data.utterancePosition = 0
+        data.utteranceRawValue = utteranceType.rawValue
+        data.display()
+        updateImage()
+        speaker.speak(wordsToSpeak:"OK")
+    }
+    
+    func startCheck() {
+        utteranceType = UtteranceType.Pulled
+        data.utterancePosition = 0
+        data.utteranceRawValue = utteranceType.rawValue
+        data.display()
+        updateImage()
+        speaker.speak(wordsToSpeak:"OK")
+    }
+    
+    func speakHelpText() {
+        speaker.speak(wordsToSpeak:"Commands that you can use are Draws Releases Check Go Next Previous Repeat and Help")
     }
     
     func sendVerb(verb:String) {
         switch(verb) {
+        case "Help","help":
+            speakHelpText()
+        case "Draws","draws","Draw","draw":
+            startDraws()
+        case "Releases","releases","Release","release":
+            startReleases()
+        case "Check","check":
+            startCheck()
         case "Next","next":
             move(delta:1)
         case "Previous","previous":
@@ -130,6 +227,7 @@ class DrawdownModel: ObservableObject {
             sayNext()
         case "Repeat","repeat":
             data.utterancePosition-=1
+            data.display()
             sayNext()
         default:
             notRecognized()
@@ -152,11 +250,12 @@ class DrawdownModel: ObservableObject {
         setLineValues(pulls:pulls, up:ups, down:downs)
     }
     
-    private func buildTextRow(pick: [UInt8]) -> [String] {
+    private func buildTextRow(pick: [UInt8]) -> ([String],[Int],[Int]) {
         var col:Int = 0
         var line:[String] = []
+        var uStart:[Int] = []
+        var uStop:[Int] = []
         let width = pick.count
-        let o = data.offset
         
         while col < width {
             if pick[col]==0 {
@@ -175,14 +274,18 @@ class DrawdownModel: ObservableObject {
                 col = stop+1
                 if start==stop {
                     line.append(String(start+data.offset))
+                    uStart.append(start)
+                    uStop.append(start)
                 } else {
                     line.append(String(start+data.offset)+" to "+String(stop+data.offset))
+                    uStart.append(start)
+                    uStop.append(stop)
                 }
             } else {
                 col+=1
             }
         }
-        return line
+        return (line,uStart,uStop)
     }
     
     func extractDrawPlan(width: Int, height: Int, pixels: [UInt8]) {
@@ -215,17 +318,78 @@ class DrawdownModel: ObservableObject {
                 previous[col] = img_array[row][col]
             }
         }
-
         for row in 0...height-1 {
             data.imline.append([])
             data.upline.append([])
             data.downline.append([])
+            data.uStart.append([]) //row
+            data.uStart[row].append([]) //utterance types
+            data.uStart[row].append([])
+            data.uStart[row].append([])
+            data.uStop.append([]) //row
+            data.uStop[row].append([]) //utterance types
+            data.uStop[row].append([])
+            data.uStop[row].append([])
+            let imTuple = buildTextRow(pick: img_array[row])
+            data.imline[row] = imTuple.0
+            data.uStart[row][UtteranceType.Pulled.rawValue-1] = imTuple.1
+            data.uStop[row][UtteranceType.Pulled.rawValue-1] = imTuple.2
 
-            data.imline[row] = buildTextRow(pick: img_array[row])
-            data.upline[row] = buildTextRow(pick: ups[row])
-            data.downline[row] = buildTextRow(pick: downs[row])
+            let upsTuple = buildTextRow(pick: ups[row])
+            data.upline[row] = upsTuple.0
+            data.uStart[row][UtteranceType.Release.rawValue-1] = upsTuple.1
+            data.uStop[row][UtteranceType.Release.rawValue-1] = upsTuple.2
+
+            let downsTuple = buildTextRow(pick: downs[row])
+            data.downline[row] = downsTuple.0
+            data.uStart[row][UtteranceType.Draw.rawValue-1] = downsTuple.1
+            data.uStop[row][UtteranceType.Draw.rawValue-1] = downsTuple.2
         }
 
+    }
+    
+    func getPixelColor(pixels:[UInt8],row:Int,col:Int,width:Int,lineNum:Int,flipped:Bool,height:Int) -> [UInt8] {
+        var color:[UInt8] = [255,255,255] // default color is white
+        var uc:[UInt8] = [192,224,255]
+        
+        var woven:Bool = (flipped && (row < lineNum)) || (!flipped && (row > lineNum))
+        if pixels[row*width+col] == 0 {
+            if woven {
+                color[0]=0
+                color[1]=0
+                color[2]=0
+            } else {
+                color[0]=128
+                color[1]=128
+                color[2]=128
+            }
+        } else {
+            if row == lineNum {
+                color[0]=240
+                color[1]=192
+                color[2]=192
+            } else {
+                if data.utteranceRawValue < UtteranceType.Empty.rawValue {
+                    let urv = data.utteranceRawValue-1
+                    let up = data.utterancePosition
+                    let usp = data.uStart
+                    let urow = flipped ? lineNum : height-lineNum-1
+                    //data.display()
+                    if usp[urow][urv].count > 0 {
+                        let uStartPos = data.uStart[urow][data.utteranceRawValue-1][data.utterancePosition]
+                        let uStopPos = data.uStop[urow][data.utteranceRawValue-1][data.utterancePosition]
+                        
+                        if (col >= width-uStopPos-1) && (col <= width-uStartPos-1) {
+                            color[0]=192
+                            color[1]=uc[urv]
+                            color[2]=240
+                        }
+                    }
+                }
+            }
+            
+        }
+        return color
     }
     
     func updateImage(width:Int,height:Int,imageData: [UInt8]) -> UIImage {
@@ -238,22 +402,7 @@ class DrawdownModel: ObservableObject {
         var color:[UInt8] = [255,255,255]
         for row in 0...data.height-1 {
             for col in 0...data.width-1 {
-                if pixels[row*width+col] == 0 {
-                    color[0]=0
-                    color[1]=0
-                    color[2]=0
-                } else {
-                    if row == lineNum {
-                        color[0]=192
-                        color[1]=0
-                        color[2]=0
-                    } else {
-                        color[0]=255
-                        color[1]=255
-                        color[2]=255
-                    }
-                }
-                
+                color = getPixelColor(pixels:pixels,row:row,col:col,width:width,lineNum:lineNum,flipped:data.upsideDown,height:height)
                 for h in 0...scale-1 {
                     for w in 0...scale-1 {
                         for c in 0...2 {
