@@ -99,7 +99,10 @@ struct ContentView: View {
     }
     
     func makeImage(pixels:[UInt8],width:Int, height:Int) -> UIImage? {
-        let img = drawdownModel!.updateImage(width: width,height: height,imageData: pixels)
+        model.image = DrawdownImage(imageData:pixels,width:width,height:height)
+        let img = model.image.updateImage(with:data!)
+        drawdownModel!.image = model.image
+        //let img = drawdownModel!.updateImage(width: width,height: height,imageData: pixels)
         return img
     }
     
@@ -162,10 +165,19 @@ struct ContentView: View {
                 Spacer()
             }
             ScrollView([.horizontal, .vertical], showsIndicators: true) {
-                Image(uiImage: model.ddImage)
-                    .resizable()
-                    .frame(width: model.ddImage.size.width, height: model.ddImage.size.height)
+                ZStack {
+                    Image(uiImage: model.ddImage)
+                        .resizable()
+                        .frame(width: model.ddImage.size.width, height: model.ddImage.size.height)
+                    Image(uiImage: model.image.hCursor)
+                        .position(x:model.ddImage.size.width/2,y:CGFloat(model.image.hcPosition))
+                    Image(uiImage: model.image.vCursor)
+                        .position(x:CGFloat(model.image.vcPosition),y:model.ddImage.size.height/2)
 
+                    Image(systemName:"circle.fill")
+                        //.position(x:model.ddImage.size.width/4, y:model.ddImage.size.height/3)
+                        .position(x:0, y:0)
+                }
             }
             .border(.blue, width: 5)
             

@@ -10,6 +10,7 @@ import SwiftUI
 
 class MyViewModel: ObservableObject {
     var ddImage:UIImage=UIImage(pixels:[[UInt8]](repeating:[UInt8](repeating: 0, count: 3), count: 44000), width:200, height:220)!
+    var image:DrawdownImage=DrawdownImage(imageData:[UInt8](repeating: 0, count: 44000), width:200, height:220)
     var scale: CGFloat = 1
     var offset: Int = 1
     var floatOffset: CGFloat = 1.0
