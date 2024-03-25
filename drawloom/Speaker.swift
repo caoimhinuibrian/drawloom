@@ -33,8 +33,8 @@ final class Speaker: NSObject, AVSpeechSynthesizerDelegate {
 
 
         // Retrieve the Irish voice.
-        let voice = AVSpeechSynthesisVoice(language: "en-US")
-
+        //let voice = AVSpeechSynthesisVoice(language: "en-IE")
+        let voice = AVSpeechSynthesisVoice(identifier: "com.apple.ttsbundle.siri_Nicky_en-US_compact")
 
         // Assign the voice to the utterance.
         utterance.voice = voice

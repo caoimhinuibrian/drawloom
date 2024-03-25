@@ -32,6 +32,15 @@ class DrawdownModel: ObservableObject {
     }
     
     init(drawdownData:DrawdownData, viewables:DrawdownViewables,viewmodel:MyViewModel) {
+        /*
+        let speechVoices = AVSpeechSynthesisVoice.speechVoices()
+        speechVoices.forEach { (voice) in
+          print("**********************************")
+          print("Voice identifier: \(voice.identifier)")
+          print("Voice language: \(voice.language)")
+          print("Voice name: \(voice.name)")
+          print("Voice quality: \(voice.quality.rawValue)") // Compact: 1 ; Enhanced: 2
+        }*/
         data = drawdownData
         self.viewables=viewables
         self.viewmodel = viewmodel
@@ -310,41 +319,6 @@ class DrawdownModel: ObservableObject {
         return color
     }
     
-
-    func updateImage(width:Int,height:Int,imageData: [UInt8]) -> UIImage {
-        let lineNum = data.upsideDown ? data.currentLineNum : height-data.currentLineNum-1
-        let startPos = lineNum*width
-        let endPos = startPos+width-1
-        var pixels = imageData
-        let scale = Int(data.scale)
-        var scaledPixels:[[UInt8]] = [[UInt8]](repeating:[UInt8](repeating: 0, count: 3), count: data.width*data.height*scale*scale)
-        var color:[UInt8] = [255,255,255]
-        for row in 0...data.height-1 {
-            for col in 0...data.width-1 {
-                color = [255,255,255]
-                if pixels[row*width+col] == 0 {
-                    color = [0,0,0]
-                } else if row == lineNum {
-                    color = [240,192,192]
-                }
-                //color = getPixelColor(pixels:&pixels,row:row,col:col,width:width,lineNum:lineNum,flipped:data.upsideDown,height:height)
-                for h in 0...scale-1 {
-                    for w in 0...scale-1 {
-                        for c in 0...2 {
-                            scaledPixels[row*width*scale*scale+col*scale+h*width*scale+w][c]=color[c]
-                        }
-                    }
-                }
-            }
-        }
-         
-        viewmodel.ddImage = UIImage(pixels: scaledPixels,width: width*scale,height: height*scale)!
-        data.pixels = pixels
-        data.width = width
-        data.height = height
-        return viewmodel.ddImage
-    }
-    
     func updateImage() {
         viewmodel.ddImage = image.updateImage(with: data)
     }
@@ -407,28 +381,20 @@ extension UIImage {
     }
  }
 
-extension UIImage {
-    convenience init?(pixels: [[UInt8]], width: Int, height: Int) {
+extension UIImage { // monochrome
+    convenience init?(pixels: [UInt8], width: Int, height: Int) {
         guard width > 0 && height > 0, pixels.count == width * height else { return nil }
         var data = pixels
-        var scale = 1
-        var rgbdata = [UInt8](repeating: 0, count: width*height*3)
-
-        for i in 0...width*height-1 {
-            for j in 0...2 {
-                rgbdata[i*3+j]=pixels[i][j]
-            }
-        }
-         guard let providerRef = CGDataProvider(data: Data(bytes: &rgbdata, count: rgbdata.count) as CFData)
-
+        //guard let providerRef = CGDataProvider(data: Data(bytes: pixels, count: pixels.count) as CFData)
+        guard let providerRef = CGDataProvider(data: Data(bytes: &data, count: data.count) as CFData)
         else { return nil }
         guard let cgim = CGImage(
             width: width,
             height: height,
             bitsPerComponent: 8,
-            bitsPerPixel: 24,
-            bytesPerRow: width*3,
-            space: CGColorSpaceCreateDeviceRGB(),
+            bitsPerPixel: 8,
+            bytesPerRow: width,
+            space: CGColorSpaceCreateDeviceGray(),
             bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue),
             provider: providerRef,
             decode: nil,
@@ -438,3 +404,36 @@ extension UIImage {
         self.init(cgImage: cgim)
     }
 }
+
+ extension UIImage { // color
+     convenience init?(pixels: [[UInt8]], width: Int, height: Int) {
+         guard width > 0 && height > 0, pixels.count == width * height else { return nil }
+         var data = pixels
+         var scale = 1
+         var rgbdata = [UInt8](repeating: 0, count: width*height*3)
+
+         for i in 0...width*height-1 {
+             for j in 0...2 {
+                 rgbdata[i*3+j]=pixels[i][j]
+             }
+         }
+          guard let providerRef = CGDataProvider(data: Data(bytes: &rgbdata, count: rgbdata.count) as CFData)
+
+         else { return nil }
+         guard let cgim = CGImage(
+             width: width,
+             height: height,
+             bitsPerComponent: 8,
+             bitsPerPixel: 24,
+             bytesPerRow: width*3,
+             space: CGColorSpaceCreateDeviceRGB(),
+             bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.none.rawValue),
+             provider: providerRef,
+             decode: nil,
+             shouldInterpolate: false,
+             intent: .defaultIntent)
+         else { return nil }
+         self.init(cgImage: cgim)
+     }
+ }
+ 

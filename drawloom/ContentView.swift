@@ -48,6 +48,7 @@ struct ContentView: View {
     @State var recognizerTask:SFSpeechRecognitionTask?
     @State var offset: Int = 1
     @State var floatOffset:CGFloat = 1.0
+    @State var scale:Int = 1
     @StateObject var model:MyViewModel = MyViewModel()
     private static let formatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -168,16 +169,28 @@ struct ContentView: View {
                 ZStack {
                     Image(uiImage: model.ddImage)
                         .resizable()
-                        .frame(width: model.ddImage.size.width, height: model.ddImage.size.height)
-                    Image(uiImage: model.image.hCursor)
-                        .position(x:model.ddImage.size.width/2,y:CGFloat(model.image.hcPosition))
-                    Image(uiImage: model.image.vCursor)
-                        .position(x:CGFloat(model.image.vcPosition),y:model.ddImage.size.height/2)
-
-                    Image(systemName:"circle.fill")
-                        //.position(x:model.ddImage.size.width/4, y:model.ddImage.size.height/3)
-                        .position(x:0, y:0)
-                }
+                        .interpolation(.none)
+                        .frame(width: model.ddImage.size.width*CGFloat(scale), height: model.ddImage.size.height*CGFloat(scale))
+                        //.frame(width: model.ddImage.size.width, height: model.ddImage.size.height)
+                    
+                    VStack{
+                        Image(uiImage: model.image.hCursor)
+                            .resizable()
+                            .opacity(0.5)
+                            .scaledToFit()
+                    }
+                    .position(x:CGFloat(scale)*model.ddImage.size.width/2,y:CGFloat(scale*model.image.hcPosition))
+                    
+                    //Image(systemName:"circle.fill")//.frame(width:5*CGFloat(scale),height:5*CGFloat(scale))
+                    //    .position(x:28*CGFloat(scale),y:2*CGFloat(scale))
+                    VStack {
+                        Image(uiImage: model.image.vCursor)
+                            .resizable()
+                            .opacity(0.75)
+                            .scaledToFit()
+                    }
+                    .position(x:CGFloat(model.image.vcPosition)*CGFloat(scale),y:CGFloat(scale)*model.ddImage.size.height/2)
+                     }
             }
             .border(.blue, width: 5)
             
@@ -204,7 +217,7 @@ struct ContentView: View {
                         {
                             Text("Offset")
                         } minimumValueLabel: {
-                            Text("0")
+                            Text("1")
                         } maximumValueLabel: {
                             Text("100")
                         } onEditingChanged: { editing in
@@ -231,23 +244,25 @@ struct ContentView: View {
                     HStack {
                         Slider(
                             value: $model.scale,
-                            in: 1...20
+                            in: 1...10,
+                            step:1
                         ) {
                             Text("Scale")
                         } minimumValueLabel: {
-                            Text("0")
+                            Text("2")
                         } maximumValueLabel: {
                             Text("20")
                         } onEditingChanged: { editing in
                             if !editing {
                                 d.scale = model.scale
+                                self.scale = Int(d.scale)
                                 drawdownModel!.updateImage()
                             }
                         }
                         .background(Color.red).frame(width:800,alignment:.leading)
                     }.frame(width:1100,alignment:.leading)
                     
-                    Text("Scale set to \(Int(data!.scale))")
+                    Text("Scale set to \(Int(2*data!.scale))")
                     
                 }
             }
