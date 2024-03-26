@@ -1,9 +1,15 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ */
 //
 //  ContentView.swift
 //  drawloom
 //
 //  Created by Kevin O'Brien on 2/20/24.
 //
+// Copyright 2024 Kevin O'Brien.
+//
+// =============================================================================
 
 //import Foundation
 //import AVFoundation

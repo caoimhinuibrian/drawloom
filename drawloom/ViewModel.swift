@@ -1,9 +1,15 @@
+/*
+ * SPDX-License-Identifier: Apache-2.0
+ */
 //
 //  ViewModel.swift
 //  drawloom
 //
 //  Created by Kevin O'Brien on 3/7/24.
 //
+// Copyright 2024 Kevin O'Brien.
+//
+// =============================================================================
 
 import Foundation
 import SwiftUI
