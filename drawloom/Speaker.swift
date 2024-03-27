@@ -32,8 +32,8 @@ final class Speaker: NSObject, AVSpeechSynthesizerDelegate {
     func speak(wordsToSpeak:String) {
         let utterance = AVSpeechUtterance(string: wordsToSpeak)
         // Configure the utterance.
-        utterance.rate = 0.57
-        utterance.pitchMultiplier = 0.8
+        utterance.rate = 0.4
+        utterance.pitchMultiplier = 1.0
         utterance.postUtteranceDelay = 0.2
         utterance.volume = 0.8
 
