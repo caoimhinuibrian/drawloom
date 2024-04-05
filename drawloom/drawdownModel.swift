@@ -88,30 +88,38 @@ class DrawdownModel: ObservableObject {
     func getUtterance() -> String {
         var utterance:String = ""
         var prefix:String = ""
-        var range:[String]
+        var ustart:[Int] = [0]
+        var ustop:[Int] = [0]
         
         print("line \(data.currentLineNum)")
         switch(utteranceType) {
         case .Release:
             prefix = "Release "
-            range = data.upline[data.currentLineNum]
+            ustart = data.uStart[data.currentLineNum][UtteranceType.Release.rawValue-1]
+            ustop = data.uStop[data.currentLineNum][UtteranceType.Release.rawValue-1]
         case .Draw:
             prefix = "Draw "
-            range = data.downline[data.currentLineNum]
+            ustart = data.uStart[data.currentLineNum][UtteranceType.Draw.rawValue-1]
+            ustop = data.uStop[data.currentLineNum][UtteranceType.Draw.rawValue-1]
         case .Pulled:
             prefix = "Active cords  "
-            range = data.imline[data.currentLineNum]
+            ustart = data.uStart[data.currentLineNum][UtteranceType.Pulled.rawValue-1]
+            ustop = data.uStop[data.currentLineNum][UtteranceType.Pulled.rawValue-1]
         case .Empty:
-            range = ["End of Pick"]
+            ustart=[0]
+            ustop=[0]
         }
         
-        //utterance = "Section Finished"
-        data.display(from:"before update - range.count is \(range.count), prefix is \(prefix)")
-        if data.utterancePosition <= range.count-1 {
-            utterance = prefix + range[data.utterancePosition]
+        if data.utterancePosition <= ustart.count-1 {
+            if ustart[data.utterancePosition]==ustop[data.utterancePosition] {
+                utterance = String(ustart[data.utterancePosition]+data.offset)
+            } else {
+                utterance = String(ustart[data.utterancePosition]+data.offset) + " to " + String(ustop[data.utterancePosition]+data.offset)
+            }
+            utterance = prefix + utterance
             data.utterancePosition += 1
             data.display(from:"after update")
-            if data.utterancePosition == range.count {
+            if data.utterancePosition == ustart.count {
                 data.utterancePosition -= 1
                 utterance += " section is finished"            }
         }

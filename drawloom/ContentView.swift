@@ -234,7 +234,6 @@ struct ContentView: View {
                                 data!.display()
                                 model.offset = Int(model.floatOffset)
                                 drawdownModel!.setOffset(offset:model.offset)
-                                drawdownModel!.extractDrawPlan(width: d.width,height: d.height, pixels: d.pixels)
                             }
                         }
                         .background(Color.yellow).frame(width:800,alignment:.leading)
