@@ -128,12 +128,10 @@ class DrawdownModel: ObservableObject {
     
 
     func sayNext() {
-        print("speaking: \(NSDate().timeIntervalSince1970)")
+        updateImage()
         let utterance = getUtterance()
         speaker.speak(wordsToSpeak:utterance)
-        print("updating image: \(NSDate().timeIntervalSince1970)")
-        updateImage()
-        print("image updated: \(NSDate().timeIntervalSince1970)")
+        //updateImage()
     }
     
     func startDraws() {
