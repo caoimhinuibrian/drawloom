@@ -16,6 +16,7 @@
 import SwiftUI
 import Speech
 import SwiftData
+import Combine
 
 struct ExecuteCode : View {
     init( _ codeToExec: () -> () ) {
@@ -205,13 +206,15 @@ struct ContentView: View {
                 if let d = data {
                     HStack {
                         Spacer()
+                        Button {
+                            model.upsideDown = true
+                            d.upsideDown = model.upsideDown
+                            drawdownModel!.extractDrawPlan(width: d.width,height: d.height, pixels: d.pixels)
+                            drawdownModel!.updateImage()
+                        } label: {
+                            Image(systemName: "repeat.circle")
+                        }
                         Text("Flip Image:")
-                        Toggle("Flip:",isOn: $model.upsideDown).labelsHidden()
-                            .onChange(of:model.upsideDown) {
-                                d.upsideDown = model.upsideDown
-                                drawdownModel!.extractDrawPlan(width: d.width,height: d.height, pixels: d.pixels)
-                                drawdownModel!.updateImage()
-                            }
                     }
 
 
