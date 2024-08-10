@@ -17,9 +17,5 @@
 	</array>
 	<key>INIntentsSupported</key>
 	<array/>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Used to control app</string>
-	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Used to control app</string>
 </dict>
 </plist>
