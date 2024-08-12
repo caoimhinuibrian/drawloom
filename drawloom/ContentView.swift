@@ -200,7 +200,9 @@ struct ContentView: View {
                      }
             }
             .border(.blue, width: 5)
-            
+            .frame(maxWidth: .infinity)
+            .padding()
+
             
             Group {
                 if let d = data {
@@ -216,6 +218,8 @@ struct ContentView: View {
                         }
                         Text("Flip Image:")
                     }
+                    .frame(maxWidth: .infinity)
+                    .padding()
 
 
                     HStack {
@@ -245,8 +249,10 @@ struct ContentView: View {
                         Spacer()
                         Text("Enable:")
                         Toggle("Enable:",isOn: $canChangeOffset).labelsHidden()
-                    }.frame(width:1100)
-                    
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+
                     Text("Offset set to \(Int(model.floatOffset))")
                     
                     HStack {
@@ -268,8 +274,11 @@ struct ContentView: View {
                             }
                         }
                         .background(Color.red).frame(width:800,alignment:.leading)
-                    }.frame(width:1100,alignment:.leading)
-                    
+                    }
+                    .frame(maxWidth: .infinity,
+                           alignment:.leading)
+                    .padding()
+
                     Text("Scale set to \(Int(2*data!.scale))")
                     
                 }
