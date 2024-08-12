@@ -174,30 +174,35 @@ struct ContentView: View {
             }
             ScrollView([.horizontal, .vertical], showsIndicators: true) {
                 ZStack {
-                    Image(uiImage: model.ddImage)
-                        .resizable()
-                        .interpolation(.none)
-                        .frame(width: model.ddImage.size.width*CGFloat(scale), height: model.ddImage.size.height*CGFloat(scale))
+                    if let ddImage = model.ddImage {
+                        Image(uiImage: ddImage)
+                            .resizable()
+                            .interpolation(.none)
+                            .frame(width: ddImage.size.width*CGFloat(scale), height: ddImage.size.height*CGFloat(scale))
                         //.frame(width: model.ddImage.size.width, height: model.ddImage.size.height)
-                    
-                    VStack{
-                        Image(uiImage: model.image.hCursor)
-                            .resizable()
-                            .opacity(0.5)
-                            .scaledToFit()
+
+                        if let hCursor = model.image.hCursor {
+                            VStack{
+                                Image(uiImage: hCursor)
+                                    .resizable()
+                                    .opacity(0.5)
+                                    .scaledToFit()
+                            }
+                            .position(x:CGFloat(scale)*ddImage.size.width/2,y:CGFloat(scale*model.image.hcPosition))
+                        }
+                        //Image(systemName:"circle.fill")//.frame(width:5*CGFloat(scale),height:5*CGFloat(scale))
+                        //    .position(x:28*CGFloat(scale),y:2*CGFloat(scale))
+                        if let vCursor = model.image.vCursor {
+                            VStack {
+                                Image(uiImage: vCursor)
+                                    .resizable()
+                                    .opacity(0.75)
+                                    .scaledToFit()
+                            }
+                            .position(x:CGFloat(model.image.vcPosition)*CGFloat(scale),y:CGFloat(scale)*ddImage.size.height/2)
+                        }
                     }
-                    .position(x:CGFloat(scale)*model.ddImage.size.width/2,y:CGFloat(scale*model.image.hcPosition))
-                    
-                    //Image(systemName:"circle.fill")//.frame(width:5*CGFloat(scale),height:5*CGFloat(scale))
-                    //    .position(x:28*CGFloat(scale),y:2*CGFloat(scale))
-                    VStack {
-                        Image(uiImage: model.image.vCursor)
-                            .resizable()
-                            .opacity(0.75)
-                            .scaledToFit()
-                    }
-                    .position(x:CGFloat(model.image.vcPosition)*CGFloat(scale),y:CGFloat(scale)*model.ddImage.size.height/2)
-                     }
+                }
             }
             .border(.blue, width: 5)
             

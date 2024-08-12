@@ -20,9 +20,9 @@ class DrawdownImage {
     var width:Int //original width
     var scale:Int // current Scale
     var scaledPixels:[UInt8] = [] // to stop complaints about calling doScaling
-    var hCursor:UIImage = UIImage(systemName:"circle.fill")!
+    var hCursor:UIImage? = nil //UIImage(systemName:"circle.fill")!
     var hcPosition:Int = 0
-    var vCursor:UIImage = UIImage(systemName:"circle.fill")!
+    var vCursor:UIImage? = nil //UIImage(systemName:"circle.fill")!
     var vcPosition:CGFloat = 0
     var previousLine:Int = -1
     init() {
@@ -64,7 +64,7 @@ class DrawdownImage {
             }
         }
         hcPosition = 2*line+1
-        hCursor = UIImage(pixels:pixels,width:width,height:1)!
+        hCursor = UIImage(pixels:pixels,width:width,height:1)
     }
   
     func updateVCursor(color:[UInt8],data:DrawdownData, line:Int,uType:Int,uPos:Int) {
@@ -97,7 +97,7 @@ class DrawdownImage {
 
                     }
                 }
-                vCursor = UIImage(pixels:scaledPixels,width:uWidth,height:height)!
+                vCursor = UIImage(pixels:scaledPixels,width:uWidth,height:height)
             }
         }
     }
