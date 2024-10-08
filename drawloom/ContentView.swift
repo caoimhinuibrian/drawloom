@@ -180,6 +180,8 @@ struct ContentView: View {
                         .frame(width: model.ddImage.size.width*CGFloat(scale), height: model.ddImage.size.height*CGFloat(scale))
                         //.frame(width: model.ddImage.size.width, height: model.ddImage.size.height)
                     
+                    ScaledLines.VerticalScale()
+                    
                     VStack{
                         Image(uiImage: model.image.hCursor)
                             .resizable()
@@ -188,8 +190,6 @@ struct ContentView: View {
                     }
                     .position(x:CGFloat(scale)*model.ddImage.size.width/2,y:CGFloat(scale*model.image.hcPosition))
                     
-                    //Image(systemName:"circle.fill")//.frame(width:5*CGFloat(scale),height:5*CGFloat(scale))
-                    //    .position(x:28*CGFloat(scale),y:2*CGFloat(scale))
                     VStack {
                         Image(uiImage: model.image.vCursor)
                             .resizable()
@@ -219,6 +219,7 @@ struct ContentView: View {
 
 
                     HStack {
+                        
                         Slider(
                             value: $model.floatOffset,
                             in: 1...100
