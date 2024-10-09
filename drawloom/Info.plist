@@ -17,5 +17,7 @@
 	</array>
 	<key>INIntentsSupported</key>
 	<array/>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>
