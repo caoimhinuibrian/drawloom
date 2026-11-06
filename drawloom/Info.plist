@@ -17,7 +17,7 @@
 	</array>
 	<key>INIntentsSupported</key>
 	<array/>
-	<key>ITSAppUsesNonExemptEncryption</key>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<false/>
 </dict>
 </plist>

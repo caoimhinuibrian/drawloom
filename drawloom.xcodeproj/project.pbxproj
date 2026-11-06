@@ -14,6 +14,7 @@
 		1F30C9EF2B9A53A000FAEEB0 /* ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F30C9EE2B9A53A000FAEEB0 /* ViewModel.swift */; };
 		1F3BD6942B894B9200F3EA29 /* speechRecognizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F3BD6932B894B9200F3EA29 /* speechRecognizer.swift */; };
 		1F3BD6982B8D8BF000F3EA29 /* drawdownModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F3BD6972B8D8BF000F3EA29 /* drawdownModel.swift */; };
+		1F4E0F6B2F84A8D80075E7DF /* StepperClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F4E0F6A2F84A8D80075E7DF /* StepperClient.swift */; };
 		1F884A3A2B96A19B001A97D8 /* DrawdownData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F884A392B96A19B001A97D8 /* DrawdownData.swift */; };
 		1FCD8B622B857FDC00642A1C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FCD8B612B857FDC00642A1C /* ContentView.swift */; };
 		1FCD8B642B857FDE00642A1C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1FCD8B632B857FDE00642A1C /* Assets.xcassets */; };
@@ -29,6 +30,7 @@
 		1F30C9EE2B9A53A000FAEEB0 /* ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModel.swift; sourceTree = "<group>"; };
 		1F3BD6932B894B9200F3EA29 /* speechRecognizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = speechRecognizer.swift; sourceTree = "<group>"; };
 		1F3BD6972B8D8BF000F3EA29 /* drawdownModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = drawdownModel.swift; sourceTree = "<group>"; };
+		1F4E0F6A2F84A8D80075E7DF /* StepperClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepperClient.swift; sourceTree = "<group>"; };
 		1F884A392B96A19B001A97D8 /* DrawdownData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrawdownData.swift; sourceTree = "<group>"; };
 		1FCD8B5C2B857FDC00642A1C /* drawloom.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = drawloom.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1FCD8B612B857FDC00642A1C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -72,6 +74,7 @@
 				1FCD8B6F2B85EA9700642A1C /* Info.plist */,
 				1F3BD6932B894B9200F3EA29 /* speechRecognizer.swift */,
 				1FCD8B612B857FDC00642A1C /* ContentView.swift */,
+				1F4E0F6A2F84A8D80075E7DF /* StepperClient.swift */,
 				1F23FF622B90296500E914BB /* drawloomApp.swift */,
 				1FCD8B632B857FDE00642A1C /* Assets.xcassets */,
 				1FCD8B652B857FDE00642A1C /* Preview Content */,
@@ -121,7 +124,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1520;
-				LastUpgradeCheck = 1520;
+				LastUpgradeCheck = 1640;
 				TargetAttributes = {
 					1FCD8B5B2B857FDC00642A1C = {
 						CreatedOnToolsVersion = 15.2;
@@ -168,6 +171,7 @@
 				1FCD8B622B857FDC00642A1C /* ContentView.swift in Sources */,
 				1F23FF6E2B956D1F00E914BB /* DrawdownViewables.swift in Sources */,
 				1F3BD6982B8D8BF000F3EA29 /* drawdownModel.swift in Sources */,
+				1F4E0F6B2F84A8D80075E7DF /* StepperClient.swift in Sources */,
 				1F23FF652B9168B600E914BB /* Speaker.swift in Sources */,
 				1F23FF632B90296500E914BB /* drawloomApp.swift in Sources */,
 				1F1271772BACD07F0055BFB2 /* DrawdownImage.swift in Sources */,
@@ -214,6 +218,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = M76BZ6C56Y;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -277,6 +282,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = M76BZ6C56Y;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -306,11 +312,12 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"drawloom/Preview Content\"";
-				DEVELOPMENT_TEAM = M76BZ6C56Y;
+				DEVELOPMENT_TEAM = 7ZLCAA6XSX;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = drawloom/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = DrawLoom;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Used to control app";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Used to control app";
@@ -324,7 +331,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.anluan.family.drawloom;
+				PRODUCT_BUNDLE_IDENTIFIER = com.caoimhinuibrian.drawloom;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -340,11 +347,12 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"drawloom/Preview Content\"";
-				DEVELOPMENT_TEAM = M76BZ6C56Y;
+				DEVELOPMENT_TEAM = 7ZLCAA6XSX;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = drawloom/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = DrawLoom;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Used to control app";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Used to control app";
@@ -358,7 +366,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.anluan.family.drawloom;
+				PRODUCT_BUNDLE_IDENTIFIER = com.caoimhinuibrian.drawloom;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
