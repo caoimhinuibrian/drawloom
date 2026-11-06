@@ -11,94 +11,94 @@
 // =============================================================================
 
 import Foundation
-import Network
 
-/// Sends TCP commands to the ESP32 stepper server and waits for "READY\n"
+/// Sends one weaving pass to the ESP32 over HTTP (POST /run) and blocks until
+/// the firmware replies "READY" (carriage has fired the solenoids and returned home).
+///
+/// The caller still passes the bit string from DrawdownData.bitString():
+/// one character per solenoid switch, "1" = fire that switch on this pass.
 class StepperClient {
+    /// Loom geometry. Keep numSwitches in sync with NUM_SWITCHES in main.cpp.
+    struct Loom {
+        var numSwitches: Int = 30      // raise to 50+ as switches are added
+        var pitchMM: Double = 10.0     // spacing between adjacent switches
+        var originMM: Double = 10.0    // carriage position of switch 1 (ASSUMED = one pitch; adjust)
+    }
+
+    var loom = Loom()
+    /// Seconds to wait for the whole pass (forward + return). The response only
+    /// arrives when the carriage is home, so this must exceed the longest pass.
+    var timeout: TimeInterval = 120
+
     private var host: String
     private var port: Int
 
-    init(host: String, port: Int = 9000) {
+    init(host: String, port: Int = 80) {
         self.host = host
         self.port = port
     }
 
-    func setHost(_ host: String, port: Int = 9000) {
+    func setHost(_ host: String, port: Int = 80) {
         self.host = host
         self.port = port
     }
 
-    /// Send a command string and wait for "READY" response.
-    /// Calls completion on main thread with success/failure.
-    func send(command: String, completion: @escaping (Bool) -> Void) {
-        let connection = NWConnection(
-            host: NWEndpoint.Host(host),
-            port: NWEndpoint.Port(integerLiteral: UInt16(port)),
-            using: .tcp
-        )
-
-        connection.stateUpdateHandler = { state in
-            switch state {
-            case .ready:
-                // Send command with newline
-                let data = (command + "\n").data(using: .utf8)!
-                connection.send(content: data, completion: .contentProcessed { error in
-                    if let error = error {
-                        print("StepperClient send error: \(error)")
-                        connection.cancel()
-                        DispatchQueue.main.async { completion(false) }
-                        return
-                    }
-                    // Wait for READY response
-                    self.waitForReady(connection: connection, completion: completion)
-                })
-            case .failed(let error):
-                print("StepperClient connection failed: \(error)")
-                DispatchQueue.main.async { completion(false) }
-            default:
-                break
-            }
+    /// Convert a bit string to ascending carriage positions in mm.
+    /// Returns nil if the string is longer than the number of switches.
+    func positions(from bits: String) -> [Double]? {
+        let chars = Array(bits)
+        guard chars.count <= loom.numSwitches else {
+            print("StepperClient: \(chars.count) columns but loom has \(loom.numSwitches) switches")
+            return nil
         }
-        connection.start(queue: .global())
+        var result: [Double] = []
+        for (i, c) in chars.enumerated() where c == "1" {
+            result.append(loom.originMM + Double(i) * loom.pitchMM)
+        }
+        return result
     }
 
-    private func waitForReady(connection: NWConnection, accumulated: String = "",
-                              completion: @escaping (Bool) -> Void) {
-        connection.receive(minimumIncompleteLength: 1, maximumLength: 64) { data, _, isComplete, error in
+    /// Send one pass and block until it completes. Call from a background thread.
+    /// `command` is the 0/1 bit string (name kept so DrawdownModel needs no change).
+    func sendSync(command bits: String) -> Bool {
+        guard let positions = positions(from: bits) else { return false }
+
+        // Nothing to pull for this color on this row: no carriage pass needed.
+        if positions.isEmpty { return true }
+
+        guard let url = URL(string: "http://\(host):\(port)/run") else { return false }
+        let body = positions.map { String(format: "%.1f", $0) }.joined(separator: ",")
+
+        var request = URLRequest(url: url, timeoutInterval: timeout)
+        request.httpMethod = "POST"
+        request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
+        request.httpBody = body.data(using: .utf8)
+
+        let config = URLSessionConfiguration.ephemeral
+        config.timeoutIntervalForRequest = timeout
+        config.timeoutIntervalForResource = timeout
+        config.waitsForConnectivity = false   // fail fast if unreachable / local network denied
+        let session = URLSession(configuration: config)
+
+        let semaphore = DispatchSemaphore(value: 0)
+        var ok = false
+        session.dataTask(with: request) { data, response, error in
+            defer { semaphore.signal() }
             if let error = error {
-                print("StepperClient receive error: \(error)")
-                connection.cancel()
-                DispatchQueue.main.async { completion(false) }
+                print("StepperClient error: \(error)")
                 return
             }
-
-            var text = accumulated
-            if let data = data, let str = String(data: data, encoding: .utf8) {
-                text += str
+            guard let http = response as? HTTPURLResponse, http.statusCode == 200,
+                  let data = data,
+                  String(data: data, encoding: .utf8)?.contains("READY") == true
+            else {
+                print("StepperClient: unexpected response")
+                return
             }
-
-            if text.contains("READY") {
-                connection.cancel()
-                DispatchQueue.main.async { completion(true) }
-            } else if isComplete {
-                connection.cancel()
-                DispatchQueue.main.async { completion(false) }
-            } else {
-                // Keep reading
-                self.waitForReady(connection: connection, accumulated: text, completion: completion)
-            }
-        }
-    }
-
-    /// Send command synchronously (blocking) — call from background thread only
-    func sendSync(command: String) -> Bool {
-        let semaphore = DispatchSemaphore(value: 0)
-        var result = false
-        send(command: command) { success in
-            result = success
-            semaphore.signal()
-        }
+            ok = true
+        }.resume()
         semaphore.wait()
-        return result
+        session.finishTasksAndInvalidate()
+        return ok
     }
 }
